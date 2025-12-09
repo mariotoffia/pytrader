@@ -85,6 +85,10 @@ async function testProviders() {
     } finally {
         await binance.disconnect();
     }
+
+    console.log('\n--- Testing Rate Limit Metadata ---');
+    console.log('Coinbase Metadata:', coinbase.getRateLimitMetadata());
+    console.log('Binance Metadata:', binance.getRateLimitMetadata());
 }
 
 testProviders().catch(console.error);

@@ -139,6 +139,7 @@ export class BinanceProvider extends DataProvider {
 
         const url = `${this.apiUrl}/api/v3/klines?symbol=${symbolParam}&interval=${binanceInterval}&startTime=${from}&endTime=${to}&limit=1000`;
 
+        await this.throttle();
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch candles: ${response.statusText}`);
@@ -255,5 +256,16 @@ export class BinanceProvider extends DataProvider {
                 this.ws?.send(JSON.stringify(msg));
             });
         }
+    }
+
+    /**
+     * Get rate limit metadata for the provider
+     * Binance API limits:
+     * Public endpoints: 1200 weight per minute
+     */
+    getRateLimitMetadata(): import('./base').RateLimitMetadata {
+        return {
+            weightPerMinute: 1200,
+        };
     }
 }

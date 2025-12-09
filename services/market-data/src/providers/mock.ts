@@ -164,4 +164,13 @@ export class MockProvider extends DataProvider {
     const intervalMs = this.getIntervalMs(interval);
     return Math.floor(now / intervalMs) * intervalMs;
   }
+  /**
+   * Get rate limit metadata for the provider
+   */
+  getRateLimitMetadata(): import('./base').RateLimitMetadata {
+    return {
+      requestsPerSecond: 100,
+      requestsPerMinute: 6000,
+    };
+  }
 }

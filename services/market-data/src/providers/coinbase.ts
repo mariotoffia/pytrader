@@ -132,6 +132,7 @@ export class CoinbaseProvider extends DataProvider {
 
         const url = `${this.apiUrl}/products/${productId}/candles?granularity=${granularity}&start=${start}&end=${end}`;
 
+        await this.throttle();
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch candles: ${response.statusText}`);
@@ -238,5 +239,16 @@ export class CoinbaseProvider extends DataProvider {
                 this.ws?.send(JSON.stringify(msg));
             }
         }
+    }
+
+    /**
+     * Get rate limit metadata for the provider
+     * Coinbase Pro API limits:
+     * Public endpoints: 10 requests per second, up to 15 bursts
+     */
+    getRateLimitMetadata(): import('./base').RateLimitMetadata {
+        return {
+            requestsPerSecond: 10,
+        };
     }
 }
