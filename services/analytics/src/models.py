@@ -1,6 +1,6 @@
 """Pydantic models for analytics API"""
 from typing import List, Dict, Any, Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # Type aliases
@@ -23,14 +23,13 @@ class OHLCVCandle(BaseModel):
 
 class CalculateIndicatorsRequest(BaseModel):
     """Request to calculate technical indicators"""
+    model_config = ConfigDict(populate_by_name=True)
+
     symbol: str
     interval: Interval
     from_: int = Field(..., alias="from")
     to: int
     indicators: List[IndicatorName]
-
-    class Config:
-        populate_by_name = True
 
 
 class IndicatorResult(BaseModel):
@@ -46,14 +45,13 @@ class CalculateIndicatorsResponse(BaseModel):
 
 class GenerateSignalsRequest(BaseModel):
     """Request to generate trading signals"""
+    model_config = ConfigDict(populate_by_name=True)
+
     symbol: str
     interval: Interval
     from_: int = Field(..., alias="from")
     to: int
     strategy_id: str
-
-    class Config:
-        populate_by_name = True
 
 
 class Signal(BaseModel):

@@ -14,7 +14,10 @@
       "Bash(for file in tests/components/*.test.tsx)",
       "Bash(do echo \"=== Testing $file ===\")",
       "Bash(chmod:*)",
-      "Bash(./run-tests.sh:*)"
+      "Bash(./run-tests.sh:*)",
+      "Bash(pip3 install:*)",
+      "Bash(command -v:*)",
+      "Bash(make test:*)"
     ]
   }
 }

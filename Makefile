@@ -59,7 +59,7 @@ test: ## Run all tests (TypeScript + Python)
 	cd services/market-data && npm test || true
 	@echo ""
 	@echo "$(YELLOW)→ Running analytics tests...$(NC)"
-	cd services/analytics && python3 -m pytest tests/ -v || true
+	cd services/analytics && .venv/bin/python -m pytest tests/ -v || true
 	@echo ""
 	@echo "$(GREEN)✓ Tests completed!$(NC)"
 
