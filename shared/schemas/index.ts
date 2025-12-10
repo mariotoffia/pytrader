@@ -110,6 +110,8 @@ export const SubscribeSignalsMessageSchema = z.object({
   type: z.literal('subscribe_signals'),
   payload: z.object({
     symbol: z.string().min(1),
+    interval: IntervalSchema.optional(),
+    strategyId: z.string().optional(),
   }),
 });
 
@@ -117,6 +119,8 @@ export const UnsubscribeSignalsMessageSchema = z.object({
   type: z.literal('unsubscribe_signals'),
   payload: z.object({
     symbol: z.string().min(1),
+    interval: IntervalSchema.optional(),
+    strategyId: z.string().optional(),
   }),
 });
 

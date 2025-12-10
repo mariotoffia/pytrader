@@ -1,4 +1,4 @@
-.PHONY: help install build test clean serve serve-all dev stop check-deps
+.PHONY: help install build test clean clean-python-env python-env serve serve-all dev stop check-deps
 
 # Default target
 .DEFAULT_GOAL := help
@@ -81,13 +81,32 @@ clean: ## Clean all build artifacts and node_modules
 	rm -rf services/market-data/dist
 	rm -rf frontend/dist
 	rm -rf shared/dist
+	@echo "$(YELLOW)→ Removing databases...$(NC)"
+	rm -rf data/*.db data/*.db-* 2>/dev/null || true
+	@echo "$(YELLOW)→ Removing logs and PID files...$(NC)"
+	rm -rf logs
+	rm -f .pid-market-data .pid-gateway .pid-analytics .pid-frontend .pid-*
+	@echo ""
+	@echo "$(GREEN)✓ Cleanup completed!$(NC)"
+
+clean-python-env: ## Remove Python virtualenv and caches (analytics service)
+	@echo "$(YELLOW)→ Removing Python virtual environments...$(NC)"
+	rm -rf .venv services/analytics/.venv
 	@echo "$(YELLOW)→ Removing Python cache...$(NC)"
 	find services/analytics -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find services/analytics -type f -name "*.pyc" -delete 2>/dev/null || true
-	@echo "$(YELLOW)→ Removing databases...$(NC)"
-	rm -rf data/*.db data/*.db-* 2>/dev/null || true
+	rm -rf services/analytics/.pytest_cache services/analytics/.mypy_cache services/analytics/.ruff_cache
+
+python-env: ## Create/refresh Python env for analytics with uv
+	@command -v uv >/dev/null 2>&1 || { echo "$(RED)Error: uv is not installed$(NC)"; exit 1; }
+	@echo "$(BLUE)Setting up Python virtual environment with uv...$(NC)"
+	cd services/analytics && uv venv .venv
+	@echo "$(YELLOW)→ Installing Python dependencies via uv (services/analytics/requirements.txt)...$(NC)"
+	cd services/analytics && UV_PROJECT_ENVIRONMENT=.venv uv pip install -r requirements.txt
 	@echo ""
-	@echo "$(GREEN)✓ Cleanup completed!$(NC)"
+	@echo "$(GREEN)✓ Python environment ready!$(NC)"
+	@echo "Activate: source services/analytics/.venv/bin/activate"
+	@echo "Or run with uv: UV_PROJECT_ENVIRONMENT=services/analytics/.venv uv run python -m src.main"
 
 serve: ## Start all services in development mode (requires 4 terminals)
 	@echo "$(BLUE)Starting PyTrader services...$(NC)"

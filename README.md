@@ -48,10 +48,13 @@ This single command will:
 # 1. Install dependencies
 make install
 
-# 2. Build projects
+# 2. (Python) Create the analytics virtualenv with uv
+make python-env
+
+# 3. Build projects
 make build
 
-# 3. Start services
+# 4. Start services
 make serve-all
 
 # Open browser to http://localhost:5173
@@ -74,6 +77,7 @@ For more commands, run `make help`
 ```bash
 make help         # Show all available commands
 make install      # Install dependencies (Node.js + Python)
+make python-env   # Create/refresh Python venv for analytics using uv
 make build        # Build all TypeScript projects
 make test         # Run all tests
 make serve-all    # Start all services in background
@@ -81,6 +85,7 @@ make stop         # Stop all services
 make status       # Check service status
 make logs         # View service logs
 make clean        # Remove build artifacts
+make clean-python-env # Remove analytics venv and Python caches
 ```
 
 ### Detailed Setup
@@ -91,11 +96,12 @@ make clean        # Remove build artifacts
 # Install all Node.js dependencies
 npm install
 
-# Install Python dependencies
-cd services/analytics
-pip install -r requirements.txt
-# or with uv: uv pip install -r requirements.txt
-cd ../..
+# Install Python dependencies with uv into a dedicated venv
+make python-env
+
+# Alternatively, manual uv:
+# cd services/analytics && uv venv .venv
+# UV_PROJECT_ENVIRONMENT=.venv uv pip install -r requirements.txt
 ```
 
 ### 2. Configure Services
@@ -138,6 +144,13 @@ npm run dev:frontend
 ```
 
 **Option B: Use a process manager (e.g., pm2 or tmux)**
+
+### Python Environment (analytics)
+
+- Create/update venv with uv: `make python-env`
+- Activate: `source services/analytics/.venv/bin/activate`
+- Run without activating: `UV_PROJECT_ENVIRONMENT=services/analytics/.venv uv run python -m src.main`
+- Clean the Python env and caches: `make clean-python-env`
 
 ### 4. Access the Application
 

@@ -4,7 +4,17 @@
       "Bash(wc:*)",
       "Bash(curl:*)",
       "Bash(npm run build:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(find:*)",
+      "Bash(for file in tests/components/*.test.tsx tests/hooks/*.test.ts tests/App.test.tsx)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(for file in tests/components/*.test.tsx)",
+      "Bash(do echo \"=== Testing $file ===\")",
+      "Bash(chmod:*)",
+      "Bash(./run-tests.sh:*)"
     ]
   }
 }
