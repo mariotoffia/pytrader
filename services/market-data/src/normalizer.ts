@@ -13,6 +13,7 @@ export function normalizeCandle(raw: RawCandle): OHLCVCandle {
     low: raw.low,
     close: raw.close,
     volume: raw.volume,
+    provider: raw.provider,
   };
 }
 

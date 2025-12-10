@@ -241,6 +241,7 @@ coverage/
 *.sqlite3
 data/
 logs/
+.pid-*
 
 # Vite
 *.local

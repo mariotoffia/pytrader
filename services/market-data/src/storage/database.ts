@@ -38,11 +38,15 @@ export class CandleDatabase {
         low REAL NOT NULL,
         close REAL NOT NULL,
         volume REAL NOT NULL,
-        UNIQUE(symbol, interval, timestamp)
+        provider TEXT NOT NULL DEFAULT 'mock',
+        UNIQUE(symbol, interval, timestamp, provider)
       );
 
       CREATE INDEX IF NOT EXISTS idx_candles_symbol_interval_time
       ON candles(symbol, interval, timestamp);
+      
+      CREATE INDEX IF NOT EXISTS idx_candles_provider
+      ON candles(provider);
     `);
   }
 

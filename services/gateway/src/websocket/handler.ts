@@ -1,8 +1,9 @@
 import { SocketStream } from '@fastify/websocket';
 import { FastifyRequest } from 'fastify';
 import { SessionManager } from './sessionManager.js';
-import { ClientMessageSchema, ServerMessage } from '@pytrader/shared/schemas';
-import { ClientMessage, ErrorMessage } from '@pytrader/shared/types';
+import { SignalPoller } from './signalPoller.js';
+import { ClientMessageSchema } from '@pytrader/shared/schemas';
+import { ClientMessage, ErrorMessage, ServerMessage } from '@pytrader/shared/types';
 import pino from 'pino';
 
 /**
@@ -11,13 +12,14 @@ import pino from 'pino';
 export class WebSocketHandler {
   constructor(
     private sessionManager: SessionManager,
-    private logger: pino.Logger
+    private logger: pino.Logger,
+    private signalPoller?: SignalPoller
   ) {}
 
   /**
    * Handle new WebSocket connection
    */
-  handleConnection(socket: SocketStream, request: FastifyRequest): void {
+  handleConnection(socket: SocketStream, _request: FastifyRequest): void {
     this.sessionManager.addClient(socket);
     this.logger.info('WebSocket client connected');
 
@@ -102,8 +104,19 @@ export class WebSocketHandler {
    */
   private handleSubscribeSignals(socket: SocketStream, message: ClientMessage): void {
     if (message.type !== 'subscribe_signals') return;
-    // TODO: Implement signal subscription
-    this.logger.debug(`Client subscribed to signals for ${message.payload.symbol}`);
+
+    const { symbol, interval, strategyId } = message.payload;
+    const int = interval || '1m';
+    const strategy = strategyId || 'ema_crossover_rsi';
+
+    this.sessionManager.subscribeSignals(socket, symbol, int, strategy);
+
+    // Also subscribe in the signal poller
+    if (this.signalPoller) {
+      this.signalPoller.subscribe(socket, symbol, int, strategy);
+    }
+
+    this.logger.debug(`Client subscribed to signals for ${symbol}:${int}:${strategy}`);
   }
 
   /**
@@ -111,8 +124,19 @@ export class WebSocketHandler {
    */
   private handleUnsubscribeSignals(socket: SocketStream, message: ClientMessage): void {
     if (message.type !== 'unsubscribe_signals') return;
-    // TODO: Implement signal unsubscription
-    this.logger.debug(`Client unsubscribed from signals for ${message.payload.symbol}`);
+
+    const { symbol, interval, strategyId } = message.payload;
+    const int = interval || '1m';
+    const strategy = strategyId || 'ema_crossover_rsi';
+
+    this.sessionManager.unsubscribeSignals(socket, symbol, int, strategy);
+
+    // Also unsubscribe from the signal poller
+    if (this.signalPoller) {
+      this.signalPoller.unsubscribe(socket, symbol, int, strategy);
+    }
+
+    this.logger.debug(`Client unsubscribed from signals for ${symbol}:${int}:${strategy}`);
   }
 
   /**
@@ -130,8 +154,8 @@ export class WebSocketHandler {
    * Send message to a specific client
    */
   sendMessage(socket: SocketStream, message: ServerMessage): void {
-    if (socket.readyState === socket.OPEN) {
-      socket.send(JSON.stringify(message));
+    if ((socket as any).readyState === (socket as any).OPEN) {
+      (socket as any).send(JSON.stringify(message));
     }
   }
 

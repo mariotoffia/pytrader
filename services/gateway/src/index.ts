@@ -5,9 +5,12 @@ import { MarketDataClient } from './clients/marketDataClient.js';
 import { AnalyticsClient } from './clients/analyticsClient.js';
 import { SessionManager } from './websocket/sessionManager.js';
 import { WebSocketHandler } from './websocket/handler.js';
+import { SignalPoller } from './websocket/signalPoller.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSymbolRoutes } from './routes/symbols.js';
 import { registerCandleRoutes } from './routes/candles.js';
+import { registerIndicatorRoutes } from './routes/indicators.js';
+import { registerSignalRoutes } from './routes/signals.js';
 
 /**
  * Gateway Service
@@ -20,6 +23,7 @@ class GatewayService {
   private analyticsClient: AnalyticsClient;
   private sessionManager: SessionManager;
   private wsHandler: WebSocketHandler;
+  private signalPoller: SignalPoller;
 
   constructor() {
     this.config = loadConfig();
@@ -37,7 +41,8 @@ class GatewayService {
 
     // Initialize WebSocket components
     this.sessionManager = new SessionManager();
-    this.wsHandler = new WebSocketHandler(this.sessionManager, this.fastify.log);
+    this.signalPoller = new SignalPoller(this.analyticsClient, this.fastify.log);
+    this.wsHandler = new WebSocketHandler(this.sessionManager, this.fastify.log, this.signalPoller);
   }
 
   /**
@@ -47,6 +52,8 @@ class GatewayService {
     await registerHealthRoutes(this.fastify);
     await registerSymbolRoutes(this.fastify);
     await registerCandleRoutes(this.fastify, this.marketDataClient);
+    await registerIndicatorRoutes(this.fastify, this.analyticsClient);
+    await registerSignalRoutes(this.fastify, this.analyticsClient);
   }
 
   /**
@@ -55,8 +62,14 @@ class GatewayService {
   private async registerWebSocket(): Promise<void> {
     await this.fastify.register(websocket);
 
-    this.fastify.get('/stream', { websocket: true }, (socket, request) => {
+    this.fastify.get('/stream', { websocket: true }, (socket: any, request: any) => {
       this.wsHandler.handleConnection(socket, request);
+
+      // When a client connects, link them to the signal poller
+      // The signal poller will handle broadcasting signals to subscribed clients
+      socket.on('close', () => {
+        this.signalPoller.removeClient(socket);
+      });
     });
   }
 
@@ -95,6 +108,10 @@ class GatewayService {
       // Check downstream services
       await this.checkDownstreamServices();
 
+      // Start signal polling
+      this.signalPoller.start();
+      this.fastify.log.info('Signal polling started');
+
       // Start HTTP server
       await this.fastify.listen({
         port: this.config.port,
@@ -115,6 +132,9 @@ class GatewayService {
    */
   async stop(): Promise<void> {
     this.fastify.log.info('Shutting down...');
+
+    // Stop signal polling
+    this.signalPoller.stop();
 
     // Close HTTP server (this also closes all WebSocket connections)
     await this.fastify.close();

@@ -7,6 +7,11 @@ import { Interval } from '@pytrader/shared/types';
 type SubscriptionKey = string;
 
 /**
+ * Signal subscription key format: "symbol:interval:strategyId"
+ */
+type SignalSubscriptionKey = string;
+
+/**
  * Manages WebSocket client sessions and their subscriptions
  */
 export class SessionManager {
@@ -16,17 +21,25 @@ export class SessionManager {
   // Map: subscription key -> Set of connections
   private subscribers = new Map<SubscriptionKey, Set<SocketStream>>();
 
+  // Map: connection -> Set of signal subscription keys
+  private signalSubscriptions = new Map<SocketStream, Set<SignalSubscriptionKey>>();
+
+  // Map: signal subscription key -> Set of connections
+  private signalSubscribers = new Map<SignalSubscriptionKey, Set<SocketStream>>();
+
   /**
    * Register a new client connection
    */
   addClient(socket: SocketStream): void {
     this.subscriptions.set(socket, new Set());
+    this.signalSubscriptions.set(socket, new Set());
   }
 
   /**
    * Remove a client connection and clean up subscriptions
    */
   removeClient(socket: SocketStream): void {
+    // Clean up candle subscriptions
     const subs = this.subscriptions.get(socket);
     if (subs) {
       // Remove this socket from all subscription lists
@@ -41,6 +54,22 @@ export class SessionManager {
       }
     }
     this.subscriptions.delete(socket);
+
+    // Clean up signal subscriptions
+    const signalSubs = this.signalSubscriptions.get(socket);
+    if (signalSubs) {
+      // Remove this socket from all signal subscription lists
+      for (const key of signalSubs) {
+        const subscribers = this.signalSubscribers.get(key);
+        if (subscribers) {
+          subscribers.delete(socket);
+          if (subscribers.size === 0) {
+            this.signalSubscribers.delete(key);
+          }
+        }
+      }
+    }
+    this.signalSubscriptions.delete(socket);
   }
 
   /**
@@ -118,5 +147,86 @@ export class SessionManager {
    */
   private makeKey(symbol: string, interval: Interval): SubscriptionKey {
     return `${symbol}:${interval}`;
+  }
+
+  /**
+   * Subscribe a client to signals for a symbol/interval/strategy
+   */
+  subscribeSignals(
+    socket: SocketStream,
+    symbol: string,
+    interval: Interval,
+    strategyId: string
+  ): void {
+    const key = this.makeSignalKey(symbol, interval, strategyId);
+
+    // Add to client's signal subscription set
+    const clientSubs = this.signalSubscriptions.get(socket);
+    if (clientSubs) {
+      clientSubs.add(key);
+    }
+
+    // Add client to signal subscription's subscriber set
+    if (!this.signalSubscribers.has(key)) {
+      this.signalSubscribers.set(key, new Set());
+    }
+    this.signalSubscribers.get(key)!.add(socket);
+  }
+
+  /**
+   * Unsubscribe a client from signals
+   */
+  unsubscribeSignals(
+    socket: SocketStream,
+    symbol: string,
+    interval: Interval,
+    strategyId: string
+  ): void {
+    const key = this.makeSignalKey(symbol, interval, strategyId);
+
+    // Remove from client's signal subscription set
+    const clientSubs = this.signalSubscriptions.get(socket);
+    if (clientSubs) {
+      clientSubs.delete(key);
+    }
+
+    // Remove client from signal subscription's subscriber set
+    const subscribers = this.signalSubscribers.get(key);
+    if (subscribers) {
+      subscribers.delete(socket);
+      if (subscribers.size === 0) {
+        this.signalSubscribers.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Get all clients subscribed to specific signals
+   */
+  getSignalSubscribers(
+    symbol: string,
+    interval: Interval,
+    strategyId: string
+  ): Set<SocketStream> {
+    const key = this.makeSignalKey(symbol, interval, strategyId);
+    return this.signalSubscribers.get(key) || new Set();
+  }
+
+  /**
+   * Get all signal subscriptions for a client
+   */
+  getClientSignalSubscriptions(socket: SocketStream): Set<SignalSubscriptionKey> {
+    return this.signalSubscriptions.get(socket) || new Set();
+  }
+
+  /**
+   * Create signal subscription key from symbol, interval, and strategyId
+   */
+  private makeSignalKey(
+    symbol: string,
+    interval: Interval,
+    strategyId: string
+  ): SignalSubscriptionKey {
+    return `${symbol}:${interval}:${strategyId}`;
   }
 }

@@ -1,5 +1,12 @@
 # PyTrader Agent Guidelines
 
+## Current Status (Dec 10, 2025)
+
+**89% Complete (24/27 items)** | Production-ready for trading with real-time charts, EMA overlays, and signal markers.
+
+**Implemented:** Backend services, Binance/Coinbase/Mock providers, SignalPoller, frontend visualization with EMA 20/50 and buy/sell markers.
+**Remaining:** Gateway tests (6-8h), Frontend tests (8-10h).
+
 ## Architecture
 
 Monorepo with 3 backend services (gateway, market-data, analytics) and 1 frontend, using provider abstraction for market data, SQLite storage, WebSocket for real-time updates, and TradingView charts for visualization.

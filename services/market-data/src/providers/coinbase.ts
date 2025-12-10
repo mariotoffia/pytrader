@@ -150,7 +150,8 @@ export class CoinbaseProvider extends DataProvider {
             high: c[2],
             open: c[3],
             close: c[4],
-            volume: c[5]
+            volume: c[5],
+            provider: 'coinbase',
         })).sort((a, b) => a.timestamp - b.timestamp);
     }
 
@@ -174,7 +175,8 @@ export class CoinbaseProvider extends DataProvider {
                         high: parseFloat(ticker.price),
                         low: parseFloat(ticker.price),
                         close: parseFloat(ticker.price),
-                        volume: parseFloat(ticker.last_size)
+                        volume: parseFloat(ticker.last_size),
+                        provider: 'coinbase',
                     };
                     this.emitCandle(candle);
                 });

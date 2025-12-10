@@ -155,7 +155,8 @@ export class BinanceProvider extends DataProvider {
             high: parseFloat(k[2]),
             low: parseFloat(k[3]),
             close: parseFloat(k[4]),
-            volume: parseFloat(k[5])
+            volume: parseFloat(k[5]),
+            provider: 'binance',
         }));
     }
 
@@ -192,7 +193,8 @@ export class BinanceProvider extends DataProvider {
                         high: parseFloat(klineMsg.k.h),
                         low: parseFloat(klineMsg.k.l),
                         close: parseFloat(klineMsg.k.c),
-                        volume: parseFloat(klineMsg.k.v)
+                        volume: parseFloat(klineMsg.k.v),
+                        provider: 'binance',
                     };
                     this.emitCandle(candle);
                 }

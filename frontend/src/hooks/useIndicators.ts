@@ -1,0 +1,97 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Interval } from '../types';
+
+export interface IndicatorResult {
+  timestamp: number;
+  [indicatorName: string]: number | undefined;
+}
+
+export interface IndicatorData {
+  ema_20?: IndicatorResult[];
+  ema_50?: IndicatorResult[];
+  rsi_14?: IndicatorResult[];
+}
+
+interface UseIndicatorsOptions {
+  symbol: string;
+  interval: Interval;
+  gatewayUrl: string;
+  candles: any[]; // Trigger refetch when candles change
+}
+
+export function useIndicators({ symbol, interval, gatewayUrl, candles }: UseIndicatorsOptions) {
+  const [indicators, setIndicators] = useState<IndicatorData>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchIndicators = useCallback(async () => {
+    if (candles.length === 0) {
+      setIndicators({});
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const from = candles[0].timestamp;
+      const to = candles[candles.length - 1].timestamp;
+
+      const response = await fetch(`${gatewayUrl}/indicators`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          symbol,
+          interval,
+          from,
+          to,
+          indicators: ['ema_20', 'ema_50', 'rsi_14'],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch indicators: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Group results by indicator name
+      const groupedIndicators: any = {};
+
+      if (data.results && Array.isArray(data.results)) {
+        // Each result has timestamp and indicator values
+        // Group them by indicator name
+        data.results.forEach((result: IndicatorResult) => {
+          Object.keys(result).forEach(key => {
+            if (key !== 'timestamp' && result[key] !== undefined) {
+              if (!groupedIndicators[key]) {
+                groupedIndicators[key] = [];
+              }
+              groupedIndicators[key].push(result);
+            }
+          });
+        });
+      }
+
+      setIndicators(groupedIndicators);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch indicators';
+      setError(message);
+      console.error('Error fetching indicators:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [symbol, interval, gatewayUrl, candles]);
+
+  // Fetch indicators when candles change
+  useEffect(() => {
+    fetchIndicators();
+  }, [fetchIndicators]);
+
+  return {
+    indicators,
+    loading,
+    error,
+    refetch: fetchIndicators,
+  };
+}

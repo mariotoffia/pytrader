@@ -108,5 +108,6 @@ export function useWebSocket({
     subscribe,
     unsubscribe,
     reconnectAttempts,
+    socket: wsRef.current,
   };
 }

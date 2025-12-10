@@ -136,6 +136,7 @@ export class MockProvider extends DataProvider {
       low,
       close,
       volume,
+      provider: 'mock',
     };
   }
 

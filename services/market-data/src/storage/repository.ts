@@ -14,19 +14,19 @@ export class CandleRepository {
   constructor(private db: Database.Database) {
     // Prepare statements for better performance
     this.insertStmt = db.prepare(`
-      INSERT OR IGNORE INTO candles (symbol, interval, timestamp, open, high, low, close, volume)
-      VALUES (@symbol, @interval, @timestamp, @open, @high, @low, @close, @volume)
+      INSERT OR IGNORE INTO candles (symbol, interval, timestamp, open, high, low, close, volume, provider)
+      VALUES (@symbol, @interval, @timestamp, @open, @high, @low, @close, @volume, @provider)
     `);
 
     this.queryByRangeStmt = db.prepare(`
-      SELECT symbol, interval, timestamp, open, high, low, close, volume
+      SELECT symbol, interval, timestamp, open, high, low, close, volume, provider
       FROM candles
       WHERE symbol = ? AND interval = ? AND timestamp >= ? AND timestamp <= ?
       ORDER BY timestamp ASC
     `);
 
     this.queryLatestStmt = db.prepare(`
-      SELECT symbol, interval, timestamp, open, high, low, close, volume
+      SELECT symbol, interval, timestamp, open, high, low, close, volume, provider
       FROM candles
       WHERE symbol = ? AND interval = ?
       ORDER BY timestamp DESC
@@ -53,6 +53,7 @@ export class CandleRepository {
       low: candle.low,
       close: candle.close,
       volume: candle.volume,
+      provider: candle.provider || 'mock',
     });
   }
 
@@ -72,6 +73,7 @@ export class CandleRepository {
           low: candle.low,
           close: candle.close,
           volume: candle.volume,
+          provider: candle.provider || 'mock',
         });
         if (info.changes > 0) inserted++;
       }

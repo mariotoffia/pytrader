@@ -1,9 +1,7 @@
 import {
-  GetCandlesRequest,
   GetCandlesResponse,
   OHLCVCandle,
   Interval,
-  Symbol,
 } from '@pytrader/shared/types';
 
 /**

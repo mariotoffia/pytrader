@@ -23,6 +23,7 @@ export interface OHLCVCandle {
   low: number;
   close: number;
   volume: number;
+  provider?: string;  // Data source provider (e.g., 'binance', 'coinbase', 'mock')
 }
 
 /**
@@ -48,6 +49,7 @@ export interface RawCandle {
   low: number;
   close: number;
   volume: number;
+  provider?: string;  // Data source provider
   [key: string]: any;  // Allow additional provider-specific fields
 }
 
@@ -125,6 +127,8 @@ export interface SubscribeSignalsMessage {
   type: 'subscribe_signals';
   payload: {
     symbol: string;
+    interval?: Interval;
+    strategyId?: string;
   };
 }
 
@@ -135,6 +139,8 @@ export interface UnsubscribeSignalsMessage {
   type: 'unsubscribe_signals';
   payload: {
     symbol: string;
+    interval?: Interval;
+    strategyId?: string;
   };
 }
 

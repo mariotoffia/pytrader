@@ -3,6 +3,9 @@ import { Chart } from './components/Chart';
 import { SymbolSelector } from './components/SymbolSelector';
 import { IntervalSelector } from './components/IntervalSelector';
 import { useCandles } from './hooks/useCandles';
+import { useIndicators } from './hooks/useIndicators';
+import { useSignals } from './hooks/useSignals';
+import { useWebSocket } from './hooks/useWebSocket';
 import { Interval } from './types';
 
 const GATEWAY_URL = 'http://localhost:3000';
@@ -17,6 +20,29 @@ function App() {
     interval,
     gatewayUrl: GATEWAY_URL,
     wsUrl: WS_URL,
+  });
+
+  // Fetch technical indicators (EMA 20, EMA 50, RSI 14)
+  const { indicators } = useIndicators({
+    symbol,
+    interval,
+    gatewayUrl: GATEWAY_URL,
+    candles,
+  });
+
+  // Get WebSocket connection for signal subscriptions
+  const { socket } = useWebSocket({
+    url: WS_URL,
+    onMessage: () => {}, // Handled by useSignals
+  });
+
+  // Fetch and subscribe to trading signals
+  const { signals } = useSignals({
+    symbol,
+    interval,
+    gatewayUrl: GATEWAY_URL,
+    wsSocket: socket,
+    strategyId: 'ema_crossover_rsi',
   });
 
   return (
@@ -101,7 +127,9 @@ function App() {
           </div>
         )}
 
-        {!loading && !error && candles.length > 0 && <Chart candles={candles} symbol={symbol} />}
+        {!loading && !error && candles.length > 0 && (
+          <Chart candles={candles} symbol={symbol} indicators={indicators} signals={signals} />
+        )}
 
         {!loading && !error && candles.length === 0 && (
           <div

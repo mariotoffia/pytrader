@@ -1,16 +1,21 @@
 import { useEffect, useRef } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
-import { OHLCVCandle } from '../types';
+import { createChart, IChartApi, ISeriesApi, CandlestickData, SeriesMarker, Time } from 'lightweight-charts';
+import { OHLCVCandle, Signal } from '../types';
+import { IndicatorData } from '../hooks/useIndicators';
 
 interface ChartProps {
   candles: OHLCVCandle[];
   symbol: string;
+  indicators?: IndicatorData;
+  signals?: Signal[];
 }
 
-export function Chart({ candles, symbol }: ChartProps) {
+export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const ema20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const ema50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -42,8 +47,28 @@ export function Chart({ candles, symbol }: ChartProps) {
       wickDownColor: '#ef5350',
     });
 
+    // Create EMA 20 line series
+    const ema20Series = chart.addLineSeries({
+      color: '#2962FF',
+      lineWidth: 2,
+      title: 'EMA 20',
+      priceLineVisible: false,
+      lastValueVisible: true,
+    });
+
+    // Create EMA 50 line series
+    const ema50Series = chart.addLineSeries({
+      color: '#FF6D00',
+      lineWidth: 2,
+      title: 'EMA 50',
+      priceLineVisible: false,
+      lastValueVisible: true,
+    });
+
     chartRef.current = chart;
     candleSeriesRef.current = candleSeries;
+    ema20SeriesRef.current = ema20Series;
+    ema50SeriesRef.current = ema50Series;
 
     // Handle window resize
     const handleResize = () => {
@@ -79,6 +104,51 @@ export function Chart({ candles, symbol }: ChartProps) {
 
     candleSeriesRef.current.setData(chartData);
   }, [candles]);
+
+  // Update EMA 20 when indicators change
+  useEffect(() => {
+    if (!ema20SeriesRef.current || !indicators?.ema_20) return;
+
+    const ema20Data = indicators.ema_20
+      .filter(item => item.ema_20 !== undefined)
+      .map(item => ({
+        time: Math.floor(item.timestamp / 1000) as Time,
+        value: item.ema_20 as number,
+      }));
+
+    ema20SeriesRef.current.setData(ema20Data);
+  }, [indicators]);
+
+  // Update EMA 50 when indicators change
+  useEffect(() => {
+    if (!ema50SeriesRef.current || !indicators?.ema_50) return;
+
+    const ema50Data = indicators.ema_50
+      .filter(item => item.ema_50 !== undefined)
+      .map(item => ({
+        time: Math.floor(item.timestamp / 1000) as Time,
+        value: item.ema_50 as number,
+      }));
+
+    ema50SeriesRef.current.setData(ema50Data);
+  }, [indicators]);
+
+  // Update signal markers when signals change
+  useEffect(() => {
+    if (!candleSeriesRef.current || !signals || signals.length === 0) return;
+
+    const markers: SeriesMarker<Time>[] = signals
+      .filter(signal => signal.action !== 'hold')
+      .map(signal => ({
+        time: Math.floor(signal.timestamp / 1000) as Time,
+        position: signal.action === 'buy' ? 'belowBar' : 'aboveBar',
+        color: signal.action === 'buy' ? '#26a69a' : '#ef5350',
+        shape: signal.action === 'buy' ? 'arrowUp' : 'arrowDown',
+        text: `${signal.action.toUpperCase()} (${signal.confidence.toFixed(2)})`,
+      }));
+
+    candleSeriesRef.current.setMarkers(markers);
+  }, [signals]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>

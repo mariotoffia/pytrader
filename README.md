@@ -5,10 +5,20 @@ A real-time trading system with Python analytics and TypeScript services, featur
 ## Architecture
 
 Monorepo containing:
-- **Gateway Service** (Node.js/TypeScript): API + WebSocket gateway
-- **Market Data Service** (Node.js/TypeScript): Data ingestion from exchanges (Binance, Coinbase) + SQLite storage
-- **Analytics Service** (Python/FastAPI): Technical indicators + trading signals
-- **Frontend** (React + Vite): TradingView charts with real-time updates
+- **Gateway Service** (Node.js/TypeScript): API + WebSocket gateway with real-time signal broadcasting
+- **Market Data Service** (Node.js/TypeScript): Data ingestion from exchanges (Binance, Coinbase, Mock) + SQLite storage
+- **Analytics Service** (Python/FastAPI): Technical indicators (EMA, RSI, Bollinger Bands) + trading signals
+- **Frontend** (React + Vite): TradingView charts with EMA overlays, signal markers, and real-time updates
+
+## Features
+
+- ✅ **Real-time Candlestick Charts** - Live OHLCV data with TradingView Lightweight Charts
+- ✅ **Technical Indicators** - EMA 20 (blue), EMA 50 (orange) overlays on charts
+- ✅ **Trading Signals** - Buy/sell markers with confidence scores
+- ✅ **Real-time Updates** - WebSocket streaming for candles and signals
+- ✅ **Multiple Exchanges** - Support for Binance, Coinbase, and Mock data
+- ✅ **Trading Strategies** - EMA Crossover + RSI filter strategy
+- ✅ **Provider Tracking** - Database tracks data source for quality analysis
 
 ## Prerequisites
 
@@ -18,6 +28,62 @@ Monorepo containing:
 - **pip** or **uv** for Python package management
 
 ## Quick Start
+
+### Option 1: One-Command Setup (Recommended)
+
+```bash
+make quick-start
+```
+
+This single command will:
+1. Check dependencies (Node.js, Python)
+2. Install all packages
+3. Build all projects
+4. Start all services in background
+5. Open at http://localhost:5173
+
+### Option 2: Manual Setup
+
+```bash
+# 1. Install dependencies
+make install
+
+# 2. Build projects
+make build
+
+# 3. Start services
+make serve-all
+
+# Open browser to http://localhost:5173
+```
+
+### Stop Services
+
+```bash
+make stop
+```
+
+For more commands, run `make help`
+
+---
+
+## Development Commands
+
+### Quick Reference
+
+```bash
+make help         # Show all available commands
+make install      # Install dependencies (Node.js + Python)
+make build        # Build all TypeScript projects
+make test         # Run all tests
+make serve-all    # Start all services in background
+make stop         # Stop all services
+make status       # Check service status
+make logs         # View service logs
+make clean        # Remove build artifacts
+```
+
+### Detailed Setup
 
 ### 1. Install Dependencies
 

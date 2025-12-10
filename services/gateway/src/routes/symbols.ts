@@ -8,7 +8,7 @@ export async function registerSymbolRoutes(fastify: FastifyInstance): Promise<vo
   /**
    * GET /symbols - Get list of supported trading symbols
    */
-  fastify.get('/symbols', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/symbols', async (_request: FastifyRequest, reply: FastifyReply) => {
     // For now, return hardcoded list of supported symbols
     // In production, this could be fetched from market-data service
     const symbols: Symbol[] = [

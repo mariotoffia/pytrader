@@ -3,6 +3,8 @@ import { CandleDatabase } from './storage/database.js';
 import { CandleRepository } from './storage/repository.js';
 import { DataProvider } from './providers/base.js';
 import { MockProvider } from './providers/mock.js';
+import { BinanceProvider } from './providers/binance.js';
+import { CoinbaseProvider } from './providers/coinbase.js';
 import { normalizeCandle } from './normalizer.js';
 import { registerCandleRoutes } from './routes/candles.js';
 import { registerHealthRoutes } from './routes/health.js';
@@ -49,11 +51,9 @@ class MarketDataService {
       case 'mock':
         return new MockProvider();
       case 'binance':
-        // TODO: Implement Binance provider
-        throw new Error('Binance provider not yet implemented');
+        return new BinanceProvider();
       case 'coinbase':
-        // TODO: Implement Coinbase provider
-        throw new Error('Coinbase provider not yet implemented');
+        return new CoinbaseProvider();
       default:
         throw new Error(`Unknown provider: ${this.config.provider}`);
     }
