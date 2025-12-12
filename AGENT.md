@@ -29,7 +29,7 @@ Monorepo with 3 backend services (gateway, market-data, analytics) and 1 fronten
 
 5. **Idempotency**: All database writes must be idempotent (use `INSERT OR IGNORE` or `UPSERT`). No duplicate candles.
 
-6. **Type Safety**:
+6. **CRITICAL Type Safety**:
    - TypeScript: Zod schemas for runtime validation, strict TypeScript config
    - Python: Pydantic models for all API payloads
    - Shared type definitions across services
@@ -57,7 +57,7 @@ Monorepo with 3 backend services (gateway, market-data, analytics) and 1 fronten
 
 1. **Test Location**: ALL tests MUST be in proper `tests/` directories within each service. NEVER in `.temp-files/`.
 
-2. **Test Coverage**:
+2. **REQUICRITICALRED Test Coverage**:
    - Unit tests for business logic (providers, normalizers, indicators, signals)
    - Integration tests for API endpoints
    - End-to-end test for full data flow (subscribe → candle → display)
@@ -72,7 +72,7 @@ Monorepo with 3 backend services (gateway, market-data, analytics) and 1 fronten
    - Use mock provider for deterministic tests
    - Mock HTTP clients between services
 
-5. **Deterministic Tests**:
+5. **CRITICAL Deterministic Tests**:
    - No randomness (or use fixed seeds)
    - Fixed timestamps in test data
    - Assertions on exact values, not ranges
@@ -82,7 +82,7 @@ Monorepo with 3 backend services (gateway, market-data, analytics) and 1 fronten
    - Test edge cases: empty data, missing candles, invalid intervals
    - Test error scenarios: API failures, network timeouts
 
-7. **Test Verification**
+7. **CRITICAL Test Verification**
    - When test fails, do a thorough check both the **code** and the test to determine the cause not assume the test is the culprit
 
 ## Code Organization
@@ -128,3 +128,4 @@ Before considering any service complete:
 - [ ] Type validation (Zod/Pydantic) on all boundaries
 - [ ] Logging added
 - [ ] README updated with setup instructions
+- [ ] Crucial that **ALL** "Design Principles" are fulfilled!!
