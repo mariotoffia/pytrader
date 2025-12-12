@@ -54,11 +54,23 @@ export function useWebSocket({
       };
 
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        // Suppress "WebSocket is closed before the connection is established" warnings
+        // This is normal during reconnection attempts when the server isn't ready
+        if (wsRef.current && wsRef.current.readyState !== WebSocket.OPEN) {
+          // Only log if we had an established connection before
+          if (reconnectAttemptsRef.current === 0) {
+            console.warn('WebSocket connection failed, will retry...');
+          }
+        } else {
+          console.error('WebSocket error:', error);
+        }
       };
 
-      ws.onclose = () => {
-        console.log('WebSocket disconnected');
+      ws.onclose = (event) => {
+        // Only log disconnection if it was a clean close or we had an established connection
+        if (event.wasClean || reconnectAttemptsRef.current === 0) {
+          console.log('WebSocket disconnected');
+        }
         setIsConnected(false);
         wsRef.current = null;
 
@@ -66,7 +78,9 @@ export function useWebSocket({
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1;
           setReconnectAttempts(reconnectAttemptsRef.current);
-          console.log(`Reconnecting in ${reconnectInterval}ms... (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
+          if (reconnectAttemptsRef.current === 1) {
+            console.log(`Reconnecting in ${reconnectInterval}ms... (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
+          }
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, reconnectInterval);
