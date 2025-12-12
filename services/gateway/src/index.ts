@@ -1,3 +1,6 @@
+// Load environment variables from .env file
+import 'dotenv/config';
+
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';

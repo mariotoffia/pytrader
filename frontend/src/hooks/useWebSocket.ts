@@ -18,14 +18,29 @@ export function useWebSocket({
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectAttemptsRef = useRef(0);
 
   const connect = useCallback(() => {
+    // Prevent multiple simultaneous connections
+    if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
+      return;
+    }
+
+    // Close existing connection if any
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
     try {
       const ws = new WebSocket(url);
 
       ws.onopen = () => {
         console.log('WebSocket connected');
         setIsConnected(true);
+        reconnectAttemptsRef.current = 0;
         setReconnectAttempts(0);
       };
 
@@ -45,12 +60,14 @@ export function useWebSocket({
       ws.onclose = () => {
         console.log('WebSocket disconnected');
         setIsConnected(false);
+        wsRef.current = null;
 
         // Attempt to reconnect
-        if (reconnectAttempts < maxReconnectAttempts) {
-          console.log(`Reconnecting in ${reconnectInterval}ms... (attempt ${reconnectAttempts + 1}/${maxReconnectAttempts})`);
+        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+          reconnectAttemptsRef.current += 1;
+          setReconnectAttempts(reconnectAttemptsRef.current);
+          console.log(`Reconnecting in ${reconnectInterval}ms... (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
           reconnectTimeoutRef.current = setTimeout(() => {
-            setReconnectAttempts((prev) => prev + 1);
             connect();
           }, reconnectInterval);
         } else {
@@ -62,16 +79,19 @@ export function useWebSocket({
     } catch (error) {
       console.error('Failed to create WebSocket:', error);
     }
-  }, [url, onMessage, reconnectInterval, maxReconnectAttempts, reconnectAttempts]);
+  }, [url, onMessage, reconnectInterval, maxReconnectAttempts]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
     if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
       wsRef.current.close();
       wsRef.current = null;
     }
+    setIsConnected(false);
   }, []);
 
   const subscribe = useCallback((symbol: string, interval: Interval) => {
@@ -101,7 +121,9 @@ export function useWebSocket({
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+    // Only run once on mount/unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     isConnected,

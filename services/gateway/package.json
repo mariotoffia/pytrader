@@ -16,6 +16,7 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/websocket": "^11.2.0",
     "@pytrader/shared": "^1.0.0",
+    "dotenv": "^17.2.3",
     "fastify": "^5.6.2",
     "pino": "^8.17.0",
     "zod": "^3.22.0"

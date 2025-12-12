@@ -1,3 +1,6 @@
+// Load environment variables from .env file
+import 'dotenv/config';
+
 import Fastify from 'fastify';
 import { CandleDatabase } from './storage/database.js';
 import { CandleRepository } from './storage/repository.js';

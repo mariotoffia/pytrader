@@ -184,23 +184,83 @@ stop: ## Stop all background services
 	@echo "$(BLUE)Stopping all services...$(NC)"
 	@if [ -f .pid-market-data ]; then \
 		PID=$$(cat .pid-market-data); \
-		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Market Data Service stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Market Data Service not running$(NC)"; \
+		if ps -p $$PID > /dev/null 2>&1; then \
+			pkill -TERM -P $$PID 2>/dev/null; \
+			kill $$PID 2>/dev/null; \
+			sleep 1; \
+			if ps -p $$PID > /dev/null 2>&1; then \
+				pkill -KILL -P $$PID 2>/dev/null; \
+				kill -9 $$PID 2>/dev/null; \
+			fi; \
+			echo "$(GREEN)✓ Market Data Service stopped (PID $$PID)$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Market Data Service not running$(NC)"; \
+		fi; \
 		rm .pid-market-data; \
+	fi
+	@if lsof -Pi :4001 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		REMAINING_PID=$$(lsof -Pi :4001 -sTCP:LISTEN -t); \
+		kill $$REMAINING_PID 2>/dev/null && echo "$(GREEN)✓ Cleaned up orphaned Market Data process (PID $$REMAINING_PID)$(NC)" || true; \
 	fi
 	@if [ -f .pid-gateway ]; then \
 		PID=$$(cat .pid-gateway); \
-		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Gateway Service stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Gateway Service not running$(NC)"; \
+		if ps -p $$PID > /dev/null 2>&1; then \
+			pkill -TERM -P $$PID 2>/dev/null; \
+			kill $$PID 2>/dev/null; \
+			sleep 1; \
+			if ps -p $$PID > /dev/null 2>&1; then \
+				pkill -KILL -P $$PID 2>/dev/null; \
+				kill -9 $$PID 2>/dev/null; \
+			fi; \
+			echo "$(GREEN)✓ Gateway Service stopped (PID $$PID)$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Gateway Service not running$(NC)"; \
+		fi; \
 		rm .pid-gateway; \
+	fi
+	@if lsof -Pi :4000 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		REMAINING_PID=$$(lsof -Pi :4000 -sTCP:LISTEN -t); \
+		kill $$REMAINING_PID 2>/dev/null && echo "$(GREEN)✓ Cleaned up orphaned Gateway process (PID $$REMAINING_PID)$(NC)" || true; \
 	fi
 	@if [ -f .pid-analytics ]; then \
 		PID=$$(cat .pid-analytics); \
-		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Analytics Service stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Analytics Service not running$(NC)"; \
+		if ps -p $$PID > /dev/null 2>&1; then \
+			pkill -TERM -P $$PID 2>/dev/null; \
+			kill $$PID 2>/dev/null; \
+			sleep 1; \
+			if ps -p $$PID > /dev/null 2>&1; then \
+				pkill -KILL -P $$PID 2>/dev/null; \
+				kill -9 $$PID 2>/dev/null; \
+			fi; \
+			echo "$(GREEN)✓ Analytics Service stopped (PID $$PID)$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Analytics Service not running$(NC)"; \
+		fi; \
 		rm .pid-analytics; \
+	fi
+	@if lsof -Pi :4002 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		REMAINING_PID=$$(lsof -Pi :4002 -sTCP:LISTEN -t); \
+		kill $$REMAINING_PID 2>/dev/null && echo "$(GREEN)✓ Cleaned up orphaned Analytics process (PID $$REMAINING_PID)$(NC)" || true; \
 	fi
 	@if [ -f .pid-frontend ]; then \
 		PID=$$(cat .pid-frontend); \
-		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Frontend stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Frontend not running$(NC)"; \
+		if ps -p $$PID > /dev/null 2>&1; then \
+			pkill -TERM -P $$PID 2>/dev/null; \
+			kill $$PID 2>/dev/null; \
+			sleep 1; \
+			if ps -p $$PID > /dev/null 2>&1; then \
+				pkill -KILL -P $$PID 2>/dev/null; \
+				kill -9 $$PID 2>/dev/null; \
+			fi; \
+			echo "$(GREEN)✓ Frontend stopped (PID $$PID)$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Frontend not running$(NC)"; \
+		fi; \
 		rm .pid-frontend; \
+	fi
+	@if lsof -Pi :4003 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		REMAINING_PID=$$(lsof -Pi :4003 -sTCP:LISTEN -t); \
+		kill $$REMAINING_PID 2>/dev/null && echo "$(GREEN)✓ Cleaned up orphaned Frontend process (PID $$REMAINING_PID)$(NC)" || true; \
 	fi
 	@echo ""
 	@echo "$(GREEN)✓ All services stopped!$(NC)"
@@ -222,46 +282,93 @@ dev: install build ## Full development setup (install + build)
 status: ## Check status of all services
 	@echo "$(BLUE)Service Status:$(NC)"
 	@echo ""
-	@echo -n "Market Data: "
-	@if [ -f .pid-market-data ]; then \
-		if ps -p $$(cat .pid-market-data) > /dev/null 2>&1; then \
-			echo "$(GREEN)Running (PID: $$(cat .pid-market-data))$(NC)"; \
+	@echo -n "Market Data (4001): "
+	@if lsof -Pi :4001 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		PID=$$(lsof -Pi :4001 -sTCP:LISTEN -t | head -1); \
+		if [ -f .pid-market-data ]; then \
+			SAVED_PID=$$(cat .pid-market-data); \
+			PGREP_PID=$$(pgrep -P $$SAVED_PID 2>/dev/null | head -1); \
+			if [ "$$PID" = "$$SAVED_PID" ] || [ "$$PID" = "$$PGREP_PID" ]; then \
+				echo "$(GREEN)Running (PID: $$PID) [managed]$(NC)"; \
+			else \
+				echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
+			fi; \
 		else \
-			echo "$(RED)Stopped (stale PID file)$(NC)"; \
+			echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
 		fi; \
 	else \
-		echo "$(RED)Stopped$(NC)"; \
-	fi
-	@echo -n "Gateway:     "
-	@if [ -f .pid-gateway ]; then \
-		if ps -p $$(cat .pid-gateway) > /dev/null 2>&1; then \
-			echo "$(GREEN)Running (PID: $$(cat .pid-gateway))$(NC)"; \
-		else \
+		if [ -f .pid-market-data ]; then \
 			echo "$(RED)Stopped (stale PID file)$(NC)"; \
+		else \
+			echo "$(RED)Stopped$(NC)"; \
+		fi; \
+	fi
+	@echo -n "Gateway (4000):     "
+	@if lsof -Pi :4000 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		PID=$$(lsof -Pi :4000 -sTCP:LISTEN -t | head -1); \
+		if [ -f .pid-gateway ]; then \
+			SAVED_PID=$$(cat .pid-gateway); \
+			PGREP_PID=$$(pgrep -P $$SAVED_PID 2>/dev/null | head -1); \
+			if [ "$$PID" = "$$SAVED_PID" ] || [ "$$PID" = "$$PGREP_PID" ]; then \
+				echo "$(GREEN)Running (PID: $$PID) [managed]$(NC)"; \
+			else \
+				echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
+			fi; \
+		else \
+			echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
 		fi; \
 	else \
-		echo "$(RED)Stopped$(NC)"; \
-	fi
-	@echo -n "Analytics:   "
-	@if [ -f .pid-analytics ]; then \
-		if ps -p $$(cat .pid-analytics) > /dev/null 2>&1; then \
-			echo "$(GREEN)Running (PID: $$(cat .pid-analytics))$(NC)"; \
-		else \
+		if [ -f .pid-gateway ]; then \
 			echo "$(RED)Stopped (stale PID file)$(NC)"; \
+		else \
+			echo "$(RED)Stopped$(NC)"; \
+		fi; \
+	fi
+	@echo -n "Analytics (4002):   "
+	@if lsof -Pi :4002 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		PID=$$(lsof -Pi :4002 -sTCP:LISTEN -t | head -1); \
+		if [ -f .pid-analytics ]; then \
+			SAVED_PID=$$(cat .pid-analytics); \
+			PGREP_PID=$$(pgrep -P $$SAVED_PID 2>/dev/null | head -1); \
+			if [ "$$PID" = "$$SAVED_PID" ] || [ "$$PID" = "$$PGREP_PID" ]; then \
+				echo "$(GREEN)Running (PID: $$PID) [managed]$(NC)"; \
+			else \
+				echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
+			fi; \
+		else \
+			echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
 		fi; \
 	else \
-		echo "$(RED)Stopped$(NC)"; \
-	fi
-	@echo -n "Frontend:    "
-	@if [ -f .pid-frontend ]; then \
-		if ps -p $$(cat .pid-frontend) > /dev/null 2>&1; then \
-			echo "$(GREEN)Running (PID: $$(cat .pid-frontend))$(NC)"; \
-		else \
+		if [ -f .pid-analytics ]; then \
 			echo "$(RED)Stopped (stale PID file)$(NC)"; \
+		else \
+			echo "$(RED)Stopped$(NC)"; \
+		fi; \
+	fi
+	@echo -n "Frontend (4003):    "
+	@if lsof -Pi :4003 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		PID=$$(lsof -Pi :4003 -sTCP:LISTEN -t | head -1); \
+		if [ -f .pid-frontend ]; then \
+			SAVED_PID=$$(cat .pid-frontend); \
+			PGREP_PID=$$(pgrep -P $$SAVED_PID 2>/dev/null | head -1); \
+			if [ "$$PID" = "$$SAVED_PID" ] || [ "$$PID" = "$$PGREP_PID" ]; then \
+				echo "$(GREEN)Running (PID: $$PID) [managed]$(NC)"; \
+			else \
+				echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
+			fi; \
+		else \
+			echo "$(GREEN)Running (PID: $$PID) [unmanaged]$(NC)"; \
 		fi; \
 	else \
-		echo "$(RED)Stopped$(NC)"; \
+		if [ -f .pid-frontend ]; then \
+			echo "$(RED)Stopped (stale PID file)$(NC)"; \
+		else \
+			echo "$(RED)Stopped$(NC)"; \
+		fi; \
 	fi
+	@echo ""
+	@echo "$(YELLOW)[managed] = started with 'make serve-all'$(NC)"
+	@echo "$(YELLOW)[unmanaged] = started manually$(NC)"
 
 quick-start: ## Quick start for first-time setup
 	@echo "$(BLUE)═══════════════════════════════════════$(NC)"
