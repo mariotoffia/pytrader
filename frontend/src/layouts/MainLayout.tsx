@@ -44,6 +44,9 @@ export function MainLayout() {
         <Link to="/market-data" style={linkStyle('/market-data')}>
           Market Data
         </Link>
+        <Link to="/market-data/browse" style={linkStyle('/market-data/browse')}>
+          Browse Candles
+        </Link>
       </nav>
 
       {/* Page content */}

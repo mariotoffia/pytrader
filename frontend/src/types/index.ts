@@ -86,3 +86,11 @@ export interface DeleteCandlesResponse {
   filters: DeleteCandlesRequest;
   timestamp: number;
 }
+
+export type CandlePageDirection = 'forward' | 'backward';
+
+export interface PageCandlesResponse {
+  candles: OHLCVCandle[];
+  nextCursor: number | null;
+  prevCursor: number | null;
+}

@@ -256,6 +256,32 @@ export interface GetCandlesResponse {
 }
 
 /**
+ * Candle paging direction relative to cursor
+ */
+export type CandlePageDirection = 'forward' | 'backward';
+
+/**
+ * GET /market-data/candles/page query parameters
+ */
+export interface PageCandlesRequest {
+  provider: DataProvider;
+  symbol: string;
+  interval: Interval;
+  cursor: number; // Unix timestamp in milliseconds
+  direction?: CandlePageDirection;
+  limit?: number;
+}
+
+/**
+ * GET /market-data/candles/page response
+ */
+export interface PageCandlesResponse {
+  candles: OHLCVCandle[];
+  nextCursor: number | null;
+  prevCursor: number | null;
+}
+
+/**
  * GET /symbols response
  */
 export interface GetSymbolsResponse {

@@ -6,6 +6,9 @@ import {
   DetailedMarketDataStats,
   DeleteCandlesRequest,
   DeleteCandlesResponse,
+  CandlePageDirection,
+  DataProvider,
+  PageCandlesResponse,
 } from '@pytrader/shared/types';
 
 /**
@@ -59,6 +62,36 @@ export class MarketDataClient {
 
     const data = (await response.json()) as { candle: OHLCVCandle };
     return data.candle;
+  }
+
+  /**
+   * Get paged candles for browsing (cursor-based)
+   */
+  async getCandlesPage(
+    provider: DataProvider,
+    symbol: string,
+    interval: Interval,
+    cursor: number,
+    direction?: CandlePageDirection,
+    limit?: number
+  ): Promise<PageCandlesResponse> {
+    const params = new URLSearchParams({
+      provider,
+      symbol,
+      interval,
+      cursor: cursor.toString(),
+    });
+    if (direction) params.append('direction', direction);
+    if (limit) params.append('limit', limit.toString());
+
+    const url = `${this.baseUrl}/internal/candles/page?${params}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Market Data Service error: ${response.statusText}`);
+    }
+
+    return (await response.json()) as PageCandlesResponse;
   }
 
   /**

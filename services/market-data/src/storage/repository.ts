@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { OHLCVCandle, Interval } from '@pytrader/shared/types';
+import { OHLCVCandle, Interval, CandlePageDirection } from '@pytrader/shared/types';
 
 /**
  * Repository for candlestick data operations
@@ -8,6 +8,8 @@ import { OHLCVCandle, Interval } from '@pytrader/shared/types';
 export class CandleRepository {
   private insertStmt: Database.Statement;
   private queryByRangeStmt: Database.Statement;
+  private queryPageForwardStmt: Database.Statement;
+  private queryPageBackwardStmt: Database.Statement;
   private queryLatestStmt: Database.Statement;
   private countStmt: Database.Statement;
   private statsStmt: Database.Statement;
@@ -25,6 +27,22 @@ export class CandleRepository {
       FROM candles
       WHERE symbol = ? AND interval = ? AND timestamp >= ? AND timestamp <= ?
       ORDER BY timestamp ASC
+    `);
+
+    this.queryPageForwardStmt = db.prepare(`
+      SELECT symbol, interval, timestamp, open, high, low, close, volume, provider
+      FROM candles
+      WHERE provider = ? AND symbol = ? AND interval = ? AND timestamp >= ?
+      ORDER BY timestamp ASC
+      LIMIT ?
+    `);
+
+    this.queryPageBackwardStmt = db.prepare(`
+      SELECT symbol, interval, timestamp, open, high, low, close, volume, provider
+      FROM candles
+      WHERE provider = ? AND symbol = ? AND interval = ? AND timestamp <= ?
+      ORDER BY timestamp DESC
+      LIMIT ?
     `);
 
     this.queryLatestStmt = db.prepare(`
@@ -128,6 +146,41 @@ export class CandleRepository {
       volume: row.volume,
       provider: row.provider,
     }));
+  }
+
+  /**
+   * Get a page of candles around a cursor time
+   * - forward: timestamp >= cursor, ordered ASC
+   * - backward: timestamp <= cursor, ordered ASC (internally queried DESC then reversed)
+   */
+  getCandlesPage(
+    provider: string,
+    symbol: string,
+    interval: Interval,
+    cursor: number,
+    direction: CandlePageDirection,
+    limit: number
+  ): OHLCVCandle[] {
+    const stmt = direction === 'backward' ? this.queryPageBackwardStmt : this.queryPageForwardStmt;
+    const rows = stmt.all(provider, symbol, interval, cursor, limit) as any[];
+
+    const candles = rows.map((row) => ({
+      symbol: row.symbol,
+      interval: row.interval,
+      timestamp: row.timestamp,
+      open: row.open,
+      high: row.high,
+      low: row.low,
+      close: row.close,
+      volume: row.volume,
+      provider: row.provider,
+    }));
+
+    if (direction === 'backward') {
+      candles.reverse();
+    }
+
+    return candles;
   }
 
   /**

@@ -1,7 +1,19 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { CandleRepository } from '../storage/repository.js';
-import { GetCandlesRequestSchema, GetCandlesResponseSchema } from '@pytrader/shared/schemas';
-import { GetCandlesRequest, Interval } from '@pytrader/shared/types';
+import {
+  GetCandlesRequestSchema,
+  GetCandlesResponseSchema,
+  PageCandlesRequestSchema,
+  PageCandlesResponseSchema,
+} from '@pytrader/shared/schemas';
+import {
+  CandlePageDirection,
+  DataProvider,
+  GetCandlesRequest,
+  Interval,
+  PageCandlesRequest,
+  PageCandlesResponse,
+} from '@pytrader/shared/types';
 
 /**
  * Register candle-related routes
@@ -40,6 +52,49 @@ export async function registerCandleRoutes(
       // Validate response
       const response = { candles };
       const responseValidation = GetCandlesResponseSchema.safeParse(response);
+      if (!responseValidation.success) {
+        fastify.log.error({ error: responseValidation.error }, 'Invalid response data');
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+
+      return reply.send(response);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * GET /internal/candles/page - Cursor-based paging for candle browsing
+   */
+  fastify.get('/internal/candles/page', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = request.query as Record<string, string>;
+      const params: PageCandlesRequest = {
+        provider: query.provider as DataProvider,
+        symbol: query.symbol,
+        interval: query.interval as Interval,
+        cursor: parseInt(query.cursor, 10),
+        direction: query.direction as CandlePageDirection | undefined,
+        limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      };
+
+      const validationResult = PageCandlesRequestSchema.safeParse(params);
+      if (!validationResult.success) {
+        return reply.status(400).send({
+          error: 'Invalid request parameters',
+          details: validationResult.error.format(),
+        });
+      }
+
+      const { provider, symbol, interval, cursor, direction, limit } = validationResult.data;
+      const candles = repository.getCandlesPage(provider, symbol, interval, cursor, direction, limit);
+
+      const nextCursor = candles.length > 0 ? candles[candles.length - 1].timestamp + 1 : null;
+      const prevCursor = candles.length > 0 ? candles[0].timestamp - 1 : null;
+
+      const response: PageCandlesResponse = { candles, nextCursor, prevCursor };
+      const responseValidation = PageCandlesResponseSchema.safeParse(response);
       if (!responseValidation.success) {
         fastify.log.error({ error: responseValidation.error }, 'Invalid response data');
         return reply.status(500).send({ error: 'Internal server error' });

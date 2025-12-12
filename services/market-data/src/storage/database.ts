@@ -45,6 +45,9 @@ export class CandleDatabase {
       CREATE INDEX IF NOT EXISTS idx_candles_symbol_interval_time
       ON candles(symbol, interval, timestamp);
       
+      CREATE INDEX IF NOT EXISTS idx_candles_provider_symbol_interval_time
+      ON candles(provider, symbol, interval, timestamp);
+
       CREATE INDEX IF NOT EXISTS idx_candles_provider
       ON candles(provider);
     `);

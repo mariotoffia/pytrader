@@ -173,6 +173,23 @@ export const GetCandlesResponseSchema = z.object({
   candles: z.array(OHLCVCandleSchema),
 });
 
+export const CandlePageDirectionSchema = z.enum(['forward', 'backward']);
+
+export const PageCandlesRequestSchema = z.object({
+  provider: DataProviderSchema,
+  symbol: z.string().min(1),
+  interval: IntervalSchema,
+  cursor: z.number().int().positive(),
+  direction: CandlePageDirectionSchema.default('forward'),
+  limit: z.number().int().min(1).max(1000).default(200),
+});
+
+export const PageCandlesResponseSchema = z.object({
+  candles: z.array(OHLCVCandleSchema),
+  nextCursor: z.number().int().positive().nullable(),
+  prevCursor: z.number().int().positive().nullable(),
+});
+
 export const GetSymbolsResponseSchema = z.object({
   symbols: z.array(SymbolSchema),
 });

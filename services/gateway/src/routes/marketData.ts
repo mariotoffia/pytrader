@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MarketDataClient } from '../clients/marketDataClient.js';
-import { DeleteCandlesRequest } from '@pytrader/shared/types';
+import { PageCandlesRequestSchema } from '@pytrader/shared/schemas';
+import { CandlePageDirection, DataProvider, DeleteCandlesRequest, Interval, PageCandlesRequest } from '@pytrader/shared/types';
 
 /**
  * Register market data management routes
@@ -59,6 +60,38 @@ export async function registerMarketDataRoutes(
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({ error: 'Failed to delete candles' });
+    }
+  });
+
+  /**
+   * GET /market-data/candles/page - Cursor-based paging for candle browsing
+   */
+  fastify.get('/market-data/candles/page', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = request.query as Record<string, string>;
+      const params: PageCandlesRequest = {
+        provider: query.provider as DataProvider,
+        symbol: query.symbol,
+        interval: query.interval as Interval,
+        cursor: parseInt(query.cursor, 10),
+        direction: query.direction as CandlePageDirection | undefined,
+        limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      };
+
+      const validationResult = PageCandlesRequestSchema.safeParse(params);
+      if (!validationResult.success) {
+        return reply.status(400).send({
+          error: 'Invalid request parameters',
+          details: validationResult.error.format(),
+        });
+      }
+
+      const { provider, symbol, interval, cursor, direction, limit } = validationResult.data;
+      const result = await marketDataClient.getCandlesPage(provider, symbol, interval, cursor, direction, limit);
+      return reply.send(result);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Failed to fetch paged candles' });
     }
   });
 }
