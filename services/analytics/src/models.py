@@ -60,6 +60,7 @@ class Signal(BaseModel):
     timestamp: int
     action: SignalAction
     confidence: float = Field(..., ge=0.0, le=1.0)
+    price: float = Field(..., description="Price at which the signal was generated")
     strategy_id: str
     metadata: Optional[Dict[str, Any]] = None
 

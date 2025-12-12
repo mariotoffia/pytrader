@@ -1,6 +1,7 @@
 import { DataProvider } from './base.js';
 import { RawCandle, Interval } from '@pytrader/shared/types';
 import WebSocket from 'ws';
+import { safeParseFloat } from './utils.js';
 
 interface CoinbaseCandle {
     0: number; // time
@@ -32,6 +33,7 @@ export class CoinbaseProvider extends DataProvider {
     private pingInterval: NodeJS.Timeout | null = null;
     private readonly apiUrl = 'https://api.exchange.coinbase.com';
     private readonly wsUrl = 'wss://ws-feed.exchange.coinbase.com';
+    private candleCache: Map<string, RawCandle> = new Map(); // Cache for in-progress candles
 
     async connect(): Promise<void> {
         if (this.connected) return;
@@ -146,11 +148,11 @@ export class CoinbaseProvider extends DataProvider {
             symbol,
             interval,
             timestamp: c[0] * 1000,
-            low: c[1],
-            high: c[2],
-            open: c[3],
-            close: c[4],
-            volume: c[5],
+            low: safeParseFloat(c[1], 'low'),
+            high: safeParseFloat(c[2], 'high'),
+            open: safeParseFloat(c[3], 'open'),
+            close: safeParseFloat(c[4], 'close'),
+            volume: safeParseFloat(c[5], 'volume'),
             provider: 'coinbase',
         })).sort((a, b) => a.timestamp - b.timestamp);
     }
@@ -163,21 +165,10 @@ export class CoinbaseProvider extends DataProvider {
                 const ticker = message as CoinbaseTickerMessage;
                 const symbol = this.parseSymbol(ticker.product_id);
 
-                // Emit for all subscribed intervals for this symbol
-                // In a real app, we would aggregate ticks into proper candles
+                // Aggregate ticks into proper candles for each subscribed interval
                 const subscriptions = this.getSubscriptions(symbol);
                 subscriptions.forEach(interval => {
-                    const candle: RawCandle = {
-                        symbol,
-                        interval,
-                        timestamp: new Date(ticker.time).getTime(),
-                        open: parseFloat(ticker.price), // Simplification
-                        high: parseFloat(ticker.price),
-                        low: parseFloat(ticker.price),
-                        close: parseFloat(ticker.price),
-                        volume: parseFloat(ticker.last_size),
-                        provider: 'coinbase',
-                    };
+                    const candle = this.updateOrCreateCandle(symbol, interval, ticker);
                     this.emitCandle(candle);
                 });
             }
@@ -192,6 +183,53 @@ export class CoinbaseProvider extends DataProvider {
 
     private parseSymbol(productId: string): string {
         return productId.replace('-', '/');
+    }
+
+    private getIntervalMs(interval: Interval): number {
+        return this.getGranularity(interval) * 1000;
+    }
+
+    private getCandleWindowStart(timestamp: number, intervalMs: number): number {
+        return Math.floor(timestamp / intervalMs) * intervalMs;
+    }
+
+    private getCacheKey(symbol: string, interval: Interval, windowStart: number): string {
+        return `${symbol}:${interval}:${windowStart}`;
+    }
+
+    private updateOrCreateCandle(symbol: string, interval: Interval, ticker: CoinbaseTickerMessage): RawCandle {
+        const price = safeParseFloat(ticker.price, 'price');
+        const volume = safeParseFloat(ticker.last_size, 'last_size');
+        const timestamp = new Date(ticker.time).getTime();
+        const intervalMs = this.getIntervalMs(interval);
+        const windowStart = this.getCandleWindowStart(timestamp, intervalMs);
+        const cacheKey = this.getCacheKey(symbol, interval, windowStart);
+
+        let candle = this.candleCache.get(cacheKey);
+
+        if (!candle) {
+            // Create new candle for this window
+            candle = {
+                symbol,
+                interval,
+                timestamp: windowStart,
+                open: price,
+                high: price,
+                low: price,
+                close: price,
+                volume: volume,
+                provider: 'coinbase',
+            };
+            this.candleCache.set(cacheKey, candle);
+        } else {
+            // Update existing candle
+            candle.high = Math.max(candle.high, price);
+            candle.low = Math.min(candle.low, price);
+            candle.close = price;
+            candle.volume += volume;
+        }
+
+        return candle;
     }
 
     private getGranularity(interval: Interval): number {

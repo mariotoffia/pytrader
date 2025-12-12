@@ -8,7 +8,7 @@ import * as path from 'path';
 export class CandleDatabase {
   private db: Database.Database;
 
-  constructor(private dbPath: string) {
+  constructor(dbPath: string) {
     // Ensure directory exists
     const dir = path.dirname(dbPath);
     if (!fs.existsSync(dir)) {

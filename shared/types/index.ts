@@ -70,6 +70,7 @@ export interface Signal {
   timestamp: number;
   action: SignalAction;
   confidence: number;    // 0.0 to 1.0
+  price: number;         // Price at which the signal was generated
   strategyId: string;    // e.g., "ema_crossover_rsi"
   metadata?: Record<string, any>;
 }

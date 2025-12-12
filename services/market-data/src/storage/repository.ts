@@ -102,6 +102,7 @@ export class CandleRepository {
       low: row.low,
       close: row.close,
       volume: row.volume,
+      provider: row.provider,
     }));
   }
 
@@ -121,6 +122,7 @@ export class CandleRepository {
       low: row.low,
       close: row.close,
       volume: row.volume,
+      provider: row.provider,
     };
   }
 

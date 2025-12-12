@@ -80,6 +80,7 @@ def generate_ema_crossover_rsi_signals(
                 timestamp=int(row["timestamp"]),
                 action=action,
                 confidence=confidence,
+                price=float(row["close"]),
                 strategy_id=strategy_id,
                 metadata={
                     "ema_20": float(row["ema_20"]),

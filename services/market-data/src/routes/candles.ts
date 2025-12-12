@@ -41,7 +41,7 @@ export async function registerCandleRoutes(
       const response = { candles };
       const responseValidation = GetCandlesResponseSchema.safeParse(response);
       if (!responseValidation.success) {
-        fastify.log.error('Invalid response data:', responseValidation.error);
+        fastify.log.error({ error: responseValidation.error }, 'Invalid response data');
         return reply.status(500).send({ error: 'Internal server error' });
       }
 

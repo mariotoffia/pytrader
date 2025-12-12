@@ -1,6 +1,7 @@
 import { DataProvider } from './base.js';
 import { RawCandle, Interval } from '@pytrader/shared/types';
 import WebSocket from 'ws';
+import { safeParseFloat } from './utils.js';
 
 interface BinanceKline {
     0: number; // Open time
@@ -151,11 +152,11 @@ export class BinanceProvider extends DataProvider {
             symbol,
             interval,
             timestamp: k[0],
-            open: parseFloat(k[1]),
-            high: parseFloat(k[2]),
-            low: parseFloat(k[3]),
-            close: parseFloat(k[4]),
-            volume: parseFloat(k[5]),
+            open: safeParseFloat(k[1], 'open'),
+            high: safeParseFloat(k[2], 'high'),
+            low: safeParseFloat(k[3], 'low'),
+            close: safeParseFloat(k[4], 'close'),
+            volume: safeParseFloat(k[5], 'volume'),
             provider: 'binance',
         }));
     }
@@ -189,11 +190,11 @@ export class BinanceProvider extends DataProvider {
                         symbol: matchedSymbol,
                         interval,
                         timestamp: klineMsg.k.t,
-                        open: parseFloat(klineMsg.k.o),
-                        high: parseFloat(klineMsg.k.h),
-                        low: parseFloat(klineMsg.k.l),
-                        close: parseFloat(klineMsg.k.c),
-                        volume: parseFloat(klineMsg.k.v),
+                        open: safeParseFloat(klineMsg.k.o, 'open'),
+                        high: safeParseFloat(klineMsg.k.h, 'high'),
+                        low: safeParseFloat(klineMsg.k.l, 'low'),
+                        close: safeParseFloat(klineMsg.k.c, 'close'),
+                        volume: safeParseFloat(klineMsg.k.v, 'volume'),
                         provider: 'binance',
                     };
                     this.emitCandle(candle);

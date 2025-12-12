@@ -9,7 +9,7 @@ export async function registerHealthRoutes(fastify: FastifyInstance): Promise<vo
   /**
    * GET /health - Service health check
    */
-  fastify.get('/health', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {
     const uptime = Date.now() - startTime;
     return reply.send({
       status: 'ok',

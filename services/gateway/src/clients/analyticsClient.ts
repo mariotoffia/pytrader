@@ -1,7 +1,6 @@
 import {
   CalculateIndicatorsRequest,
   CalculateIndicatorsResponse,
-  GenerateSignalsRequest,
   GenerateSignalsResponse,
   IndicatorResult,
   Signal,

@@ -13,6 +13,7 @@ export interface OHLCVCandle {
   low: number;
   close: number;
   volume: number;
+  provider?: string;
 }
 
 export interface Symbol {
@@ -30,6 +31,7 @@ export interface Signal {
   timestamp: number;
   action: SignalAction;
   confidence: number;
+  price: number;
   strategyId: string;
   metadata?: Record<string, any>;
 }

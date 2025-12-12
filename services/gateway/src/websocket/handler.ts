@@ -1,4 +1,4 @@
-import { SocketStream } from '@fastify/websocket';
+import type { WebSocket } from 'ws';
 import { FastifyRequest } from 'fastify';
 import { SessionManager } from './sessionManager.js';
 import { SignalPoller } from './signalPoller.js';
@@ -19,7 +19,7 @@ export class WebSocketHandler {
   /**
    * Handle new WebSocket connection
    */
-  handleConnection(socket: SocketStream, _request: FastifyRequest): void {
+  handleConnection(socket: WebSocket, _request: FastifyRequest): void {
     this.sessionManager.addClient(socket);
     this.logger.info('WebSocket client connected');
 
@@ -43,7 +43,7 @@ export class WebSocketHandler {
   /**
    * Handle incoming message from client
    */
-  private handleMessage(socket: SocketStream, data: Buffer): void {
+  private handleMessage(socket: WebSocket, data: Buffer): void {
     try {
       const raw = JSON.parse(data.toString());
       const validationResult = ClientMessageSchema.safeParse(raw);
@@ -80,7 +80,7 @@ export class WebSocketHandler {
   /**
    * Handle subscribe to candles
    */
-  private handleSubscribeCandles(socket: SocketStream, message: ClientMessage): void {
+  private handleSubscribeCandles(socket: WebSocket, message: ClientMessage): void {
     if (message.type !== 'subscribe_candles') return;
 
     const { symbol, interval } = message.payload;
@@ -91,7 +91,7 @@ export class WebSocketHandler {
   /**
    * Handle unsubscribe from candles
    */
-  private handleUnsubscribeCandles(socket: SocketStream, message: ClientMessage): void {
+  private handleUnsubscribeCandles(socket: WebSocket, message: ClientMessage): void {
     if (message.type !== 'unsubscribe_candles') return;
 
     const { symbol, interval } = message.payload;
@@ -102,7 +102,7 @@ export class WebSocketHandler {
   /**
    * Handle subscribe to signals (placeholder)
    */
-  private handleSubscribeSignals(socket: SocketStream, message: ClientMessage): void {
+  private handleSubscribeSignals(socket: WebSocket, message: ClientMessage): void {
     if (message.type !== 'subscribe_signals') return;
 
     const { symbol, interval, strategyId } = message.payload;
@@ -122,7 +122,7 @@ export class WebSocketHandler {
   /**
    * Handle unsubscribe from signals (placeholder)
    */
-  private handleUnsubscribeSignals(socket: SocketStream, message: ClientMessage): void {
+  private handleUnsubscribeSignals(socket: WebSocket, message: ClientMessage): void {
     if (message.type !== 'unsubscribe_signals') return;
 
     const { symbol, interval, strategyId } = message.payload;
@@ -142,7 +142,7 @@ export class WebSocketHandler {
   /**
    * Send error message to client
    */
-  private sendError(socket: SocketStream, message: string, code?: string): void {
+  private sendError(socket: WebSocket, message: string, code?: string): void {
     const errorMessage: ErrorMessage = {
       type: 'error',
       payload: { message, code },
@@ -153,9 +153,9 @@ export class WebSocketHandler {
   /**
    * Send message to a specific client
    */
-  sendMessage(socket: SocketStream, message: ServerMessage): void {
-    if ((socket as any).readyState === (socket as any).OPEN) {
-      (socket as any).send(JSON.stringify(message));
+  sendMessage(socket: WebSocket, message: ServerMessage): void {
+    if (socket.readyState === socket.OPEN) {
+      socket.send(JSON.stringify(message));
     }
   }
 

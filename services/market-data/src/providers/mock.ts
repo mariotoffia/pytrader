@@ -29,7 +29,7 @@ export class MockProvider extends DataProvider {
 
   async disconnect(): Promise<void> {
     // Stop all update intervals
-    for (const [key, interval] of this.intervals.entries()) {
+    for (const [, interval] of this.intervals.entries()) {
       clearInterval(interval);
     }
     this.intervals.clear();

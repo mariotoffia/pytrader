@@ -1,4 +1,4 @@
-import { SocketStream } from '@fastify/websocket';
+import type { WebSocket } from 'ws';
 import { AnalyticsClient } from '../clients/analyticsClient.js';
 import { Interval, Signal, ServerMessage } from '@pytrader/shared/types';
 import pino from 'pino';
@@ -15,7 +15,7 @@ interface SignalSubscription {
   symbol: string;
   interval: Interval;
   strategyId: string;
-  subscribers: Set<SocketStream>;
+  subscribers: Set<WebSocket>;
   lastCheckTimestamp: number;
 }
 
@@ -69,7 +69,7 @@ export class SignalPoller {
    * Subscribe a client to signals for a symbol/interval/strategy
    */
   subscribe(
-    socket: SocketStream,
+    socket: WebSocket,
     symbol: string,
     interval: Interval,
     strategyId: string
@@ -97,7 +97,7 @@ export class SignalPoller {
    * Unsubscribe a client from signals
    */
   unsubscribe(
-    socket: SocketStream,
+    socket: WebSocket,
     symbol: string,
     interval: Interval,
     strategyId: string
@@ -120,7 +120,7 @@ export class SignalPoller {
   /**
    * Remove a client from all signal subscriptions
    */
-  removeClient(socket: SocketStream): void {
+  removeClient(socket: WebSocket): void {
     for (const [key, subscription] of this.subscriptions.entries()) {
       subscription.subscribers.delete(socket);
 
@@ -135,7 +135,7 @@ export class SignalPoller {
   /**
    * Get all signal subscriptions for a client
    */
-  getClientSubscriptions(socket: SocketStream): SignalSubscriptionKey[] {
+  getClientSubscriptions(socket: WebSocket): SignalSubscriptionKey[] {
     const subscriptions: SignalSubscriptionKey[] = [];
 
     for (const [key, subscription] of this.subscriptions.entries()) {
@@ -212,7 +212,7 @@ export class SignalPoller {
   /**
    * Broadcast a signal to a set of subscribers
    */
-  private broadcastSignal(subscribers: Set<SocketStream>, signal: Signal): void {
+  private broadcastSignal(subscribers: Set<WebSocket>, signal: Signal): void {
     const message: ServerMessage = {
       type: 'signal_update',
       payload: signal,

@@ -1,4 +1,4 @@
-import { SocketStream } from '@fastify/websocket';
+import type { WebSocket } from 'ws';
 import { Interval } from '@pytrader/shared/types';
 
 /**
@@ -16,21 +16,21 @@ type SignalSubscriptionKey = string;
  */
 export class SessionManager {
   // Map: connection -> Set of subscription keys
-  private subscriptions = new Map<SocketStream, Set<SubscriptionKey>>();
+  private subscriptions = new Map<WebSocket, Set<SubscriptionKey>>();
 
   // Map: subscription key -> Set of connections
-  private subscribers = new Map<SubscriptionKey, Set<SocketStream>>();
+  private subscribers = new Map<SubscriptionKey, Set<WebSocket>>();
 
   // Map: connection -> Set of signal subscription keys
-  private signalSubscriptions = new Map<SocketStream, Set<SignalSubscriptionKey>>();
+  private signalSubscriptions = new Map<WebSocket, Set<SignalSubscriptionKey>>();
 
   // Map: signal subscription key -> Set of connections
-  private signalSubscribers = new Map<SignalSubscriptionKey, Set<SocketStream>>();
+  private signalSubscribers = new Map<SignalSubscriptionKey, Set<WebSocket>>();
 
   /**
    * Register a new client connection
    */
-  addClient(socket: SocketStream): void {
+  addClient(socket: WebSocket): void {
     this.subscriptions.set(socket, new Set());
     this.signalSubscriptions.set(socket, new Set());
   }
@@ -38,7 +38,7 @@ export class SessionManager {
   /**
    * Remove a client connection and clean up subscriptions
    */
-  removeClient(socket: SocketStream): void {
+  removeClient(socket: WebSocket): void {
     // Clean up candle subscriptions
     const subs = this.subscriptions.get(socket);
     if (subs) {
@@ -75,7 +75,7 @@ export class SessionManager {
   /**
    * Subscribe a client to candles for a symbol/interval
    */
-  subscribeCandles(socket: SocketStream, symbol: string, interval: Interval): void {
+  subscribeCandles(socket: WebSocket, symbol: string, interval: Interval): void {
     const key = this.makeKey(symbol, interval);
 
     // Add to client's subscription set
@@ -94,7 +94,7 @@ export class SessionManager {
   /**
    * Unsubscribe a client from candles
    */
-  unsubscribeCandles(socket: SocketStream, symbol: string, interval: Interval): void {
+  unsubscribeCandles(socket: WebSocket, symbol: string, interval: Interval): void {
     const key = this.makeKey(symbol, interval);
 
     // Remove from client's subscription set
@@ -116,7 +116,7 @@ export class SessionManager {
   /**
    * Get all clients subscribed to a specific symbol/interval
    */
-  getSubscribers(symbol: string, interval: Interval): Set<SocketStream> {
+  getSubscribers(symbol: string, interval: Interval): Set<WebSocket> {
     const key = this.makeKey(symbol, interval);
     return this.subscribers.get(key) || new Set();
   }
@@ -124,7 +124,7 @@ export class SessionManager {
   /**
    * Get all subscriptions for a client
    */
-  getClientSubscriptions(socket: SocketStream): Set<SubscriptionKey> {
+  getClientSubscriptions(socket: WebSocket): Set<SubscriptionKey> {
     return this.subscriptions.get(socket) || new Set();
   }
 
@@ -153,7 +153,7 @@ export class SessionManager {
    * Subscribe a client to signals for a symbol/interval/strategy
    */
   subscribeSignals(
-    socket: SocketStream,
+    socket: WebSocket,
     symbol: string,
     interval: Interval,
     strategyId: string
@@ -177,7 +177,7 @@ export class SessionManager {
    * Unsubscribe a client from signals
    */
   unsubscribeSignals(
-    socket: SocketStream,
+    socket: WebSocket,
     symbol: string,
     interval: Interval,
     strategyId: string
@@ -207,7 +207,7 @@ export class SessionManager {
     symbol: string,
     interval: Interval,
     strategyId: string
-  ): Set<SocketStream> {
+  ): Set<WebSocket> {
     const key = this.makeSignalKey(symbol, interval, strategyId);
     return this.signalSubscribers.get(key) || new Set();
   }
@@ -215,7 +215,7 @@ export class SessionManager {
   /**
    * Get all signal subscriptions for a client
    */
-  getClientSignalSubscriptions(socket: SocketStream): Set<SignalSubscriptionKey> {
+  getClientSignalSubscriptions(socket: WebSocket): Set<SignalSubscriptionKey> {
     return this.signalSubscriptions.get(socket) || new Set();
   }
 

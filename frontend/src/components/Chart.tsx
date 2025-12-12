@@ -305,18 +305,28 @@ export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
   useEffect(() => {
     if (!candleSeriesRef.current || !signals || signals.length === 0) return;
 
+    // Create a map of candle timestamps for validation
+    const candleTimestamps = new Set(
+      candles.map(c => Math.floor(c.timestamp / 1000))
+    );
+
     const markers: SeriesMarker<Time>[] = signals
       .filter(signal => signal.action !== 'hold')
+      .filter(signal => {
+        // Only include signals that have corresponding candles in the visible range
+        const signalTime = Math.floor(signal.timestamp / 1000);
+        return candleTimestamps.has(signalTime);
+      })
       .map(signal => ({
         time: Math.floor(signal.timestamp / 1000) as Time,
         position: signal.action === 'buy' ? 'belowBar' : 'aboveBar',
         color: signal.action === 'buy' ? '#26a69a' : '#ef5350',
         shape: signal.action === 'buy' ? 'arrowUp' : 'arrowDown',
-        text: `${signal.action.toUpperCase()} (${signal.confidence.toFixed(2)})`,
+        text: `${signal.action.toUpperCase()} @${signal.price.toFixed(4)} (${signal.confidence.toFixed(2)})`,
       }));
 
     candleSeriesRef.current.setMarkers(markers);
-  }, [signals]);
+  }, [signals, candles]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>

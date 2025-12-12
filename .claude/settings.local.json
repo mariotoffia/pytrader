@@ -32,7 +32,10 @@
       "Bash(kill:*)",
       "Bash(make:*)",
       "Bash(python3:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(make build:*)",
+      "Bash(tee:*)",
+      "Bash(sqlite3:*)"
     ]
   }
 }
