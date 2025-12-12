@@ -2,6 +2,10 @@ import {
   GetCandlesResponse,
   OHLCVCandle,
   Interval,
+  MarketDataStatistics,
+  DetailedMarketDataStats,
+  DeleteCandlesRequest,
+  DeleteCandlesResponse,
 } from '@pytrader/shared/types';
 
 /**
@@ -67,5 +71,52 @@ export class MarketDataClient {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Get overall market data statistics
+   */
+  async getStatistics(): Promise<MarketDataStatistics> {
+    const url = `${this.baseUrl}/internal/candles/stats`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Market Data Service error: ${response.statusText}`);
+    }
+
+    return (await response.json()) as MarketDataStatistics;
+  }
+
+  /**
+   * Get detailed statistics breakdown by provider/symbol/interval
+   */
+  async getDetailedStats(): Promise<{ stats: DetailedMarketDataStats[] }> {
+    const url = `${this.baseUrl}/internal/candles/stats/detailed`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Market Data Service error: ${response.statusText}`);
+    }
+
+    return (await response.json()) as { stats: DetailedMarketDataStats[] };
+  }
+
+  /**
+   * Delete candles with flexible filtering
+   */
+  async deleteCandles(filters: DeleteCandlesRequest): Promise<DeleteCandlesResponse> {
+    const params = new URLSearchParams();
+    if (filters.provider) params.append('provider', filters.provider);
+    if (filters.symbol) params.append('symbol', filters.symbol);
+    if (filters.interval) params.append('interval', filters.interval);
+
+    const url = `${this.baseUrl}/internal/candles?${params}`;
+    const response = await fetch(url, { method: 'DELETE' });
+
+    if (!response.ok) {
+      throw new Error(`Market Data Service error: ${response.statusText}`);
+    }
+
+    return (await response.json()) as DeleteCandlesResponse;
   }
 }

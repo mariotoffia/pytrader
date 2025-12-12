@@ -12,6 +12,7 @@ import { registerSymbolRoutes } from './routes/symbols.js';
 import { registerCandleRoutes } from './routes/candles.js';
 import { registerIndicatorRoutes } from './routes/indicators.js';
 import { registerSignalRoutes } from './routes/signals.js';
+import { registerMarketDataRoutes } from './routes/marketData.js';
 
 /**
  * Gateway Service
@@ -55,6 +56,7 @@ class GatewayService {
     await registerCandleRoutes(this.fastify, this.marketDataClient);
     await registerIndicatorRoutes(this.fastify, this.analyticsClient);
     await registerSignalRoutes(this.fastify, this.analyticsClient);
+    await registerMarketDataRoutes(this.fastify, this.marketDataClient);
   }
 
   /**

@@ -80,4 +80,61 @@ export async function registerCandleRoutes(
       return reply.status(500).send({ error: 'Internal server error' });
     }
   });
+
+  /**
+   * GET /internal/candles/stats - Get overall statistics
+   */
+  fastify.get('/internal/candles/stats', async (_request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const stats = repository.getStatistics();
+      return reply.send(stats);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * GET /internal/candles/stats/detailed - Get detailed statistics breakdown
+   */
+  fastify.get('/internal/candles/stats/detailed', async (_request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const stats = repository.getDetailedStats();
+      return reply.send({ stats });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * DELETE /internal/candles - Delete candles with filters
+   */
+  fastify.delete('/internal/candles', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const query = request.query as Record<string, string>;
+      const { provider, symbol, interval } = query;
+
+      // Require at least one filter
+      if (!provider && !symbol && !interval) {
+        return reply.status(400).send({
+          error: 'At least one filter required: provider, symbol, or interval',
+        });
+      }
+
+      const deleted = repository.deleteCandles({ provider, symbol, interval });
+
+      fastify.log.info({ deleted, provider, symbol, interval }, 'Deleted candles');
+
+      return reply.send({
+        success: true,
+        deletedCount: deleted,
+        filters: { provider, symbol, interval },
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Failed to delete candles' });
+    }
+  });
 }

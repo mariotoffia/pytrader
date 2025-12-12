@@ -56,3 +56,33 @@ export interface SignalUpdateMessage {
 }
 
 export type ServerMessage = CandleUpdateMessage | SignalUpdateMessage;
+
+// Market Data Management Types
+export interface MarketDataStatistics {
+  totalCandles: number;
+  providers: string[];
+  symbols: string[];
+  intervals: string[];
+}
+
+export interface DetailedMarketDataStats {
+  provider: string;
+  symbol: string;
+  interval: string;
+  count: number;
+  oldestTimestamp: number;
+  newestTimestamp: number;
+}
+
+export interface DeleteCandlesRequest {
+  provider?: string;
+  symbol?: string;
+  interval?: string;
+}
+
+export interface DeleteCandlesResponse {
+  success: boolean;
+  deletedCount: number;
+  filters: DeleteCandlesRequest;
+  timestamp: number;
+}

@@ -96,6 +96,51 @@ export interface IndicatorResult {
 }
 
 // ============================================================================
+// Market Data Management Types
+// ============================================================================
+
+/**
+ * Overall market data statistics
+ */
+export interface MarketDataStatistics {
+  totalCandles: number;
+  providers: string[];
+  symbols: string[];
+  intervals: string[];
+}
+
+/**
+ * Detailed statistics by provider/symbol/interval
+ */
+export interface DetailedMarketDataStats {
+  provider: string;
+  symbol: string;
+  interval: string;
+  count: number;
+  oldestTimestamp: number;
+  newestTimestamp: number;
+}
+
+/**
+ * Request to delete candles with filters
+ */
+export interface DeleteCandlesRequest {
+  provider?: string;
+  symbol?: string;
+  interval?: string;
+}
+
+/**
+ * Response from delete candles operation
+ */
+export interface DeleteCandlesResponse {
+  success: boolean;
+  deletedCount: number;
+  filters: DeleteCandlesRequest;
+  timestamp: number;
+}
+
+// ============================================================================
 // WebSocket Message Types
 // ============================================================================
 

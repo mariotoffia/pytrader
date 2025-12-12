@@ -10,6 +10,8 @@ export class CandleRepository {
   private queryByRangeStmt: Database.Statement;
   private queryLatestStmt: Database.Statement;
   private countStmt: Database.Statement;
+  private statsStmt: Database.Statement;
+  private detailedStatsStmt: Database.Statement;
 
   constructor(private db: Database.Database) {
     // Prepare statements for better performance
@@ -37,6 +39,28 @@ export class CandleRepository {
       SELECT COUNT(*) as count
       FROM candles
       WHERE symbol = ? AND interval = ?
+    `);
+
+    this.statsStmt = db.prepare(`
+      SELECT
+        COUNT(*) as totalCandles,
+        COUNT(DISTINCT provider) as providerCount,
+        COUNT(DISTINCT symbol) as symbolCount,
+        COUNT(DISTINCT interval) as intervalCount
+      FROM candles
+    `);
+
+    this.detailedStatsStmt = db.prepare(`
+      SELECT
+        provider,
+        symbol,
+        interval,
+        COUNT(*) as count,
+        MIN(timestamp) as oldestTimestamp,
+        MAX(timestamp) as newestTimestamp
+      FROM candles
+      GROUP BY provider, symbol, interval
+      ORDER BY provider, symbol, interval
     `);
   }
 
@@ -132,5 +156,107 @@ export class CandleRepository {
   countCandles(symbol: string, interval: Interval): number {
     const result = this.countStmt.get(symbol, interval) as any;
     return result?.count || 0;
+  }
+
+  /**
+   * Get overall statistics
+   */
+  getStatistics(): {
+    totalCandles: number;
+    providers: string[];
+    symbols: string[];
+    intervals: string[];
+  } {
+    const stats = this.statsStmt.get() as any;
+
+    const providers = this.db
+      .prepare('SELECT DISTINCT provider FROM candles ORDER BY provider')
+      .all()
+      .map((row: any) => row.provider);
+
+    const symbols = this.db
+      .prepare('SELECT DISTINCT symbol FROM candles ORDER BY symbol')
+      .all()
+      .map((row: any) => row.symbol);
+
+    const intervals = this.db
+      .prepare('SELECT DISTINCT interval FROM candles ORDER BY interval')
+      .all()
+      .map((row: any) => row.interval);
+
+    return {
+      totalCandles: stats.totalCandles || 0,
+      providers,
+      symbols,
+      intervals,
+    };
+  }
+
+  /**
+   * Get detailed statistics breakdown
+   */
+  getDetailedStats(): Array<{
+    provider: string;
+    symbol: string;
+    interval: string;
+    count: number;
+    oldestTimestamp: number;
+    newestTimestamp: number;
+  }> {
+    const rows = this.detailedStatsStmt.all() as any[];
+    return rows.map((row) => ({
+      provider: row.provider,
+      symbol: row.symbol,
+      interval: row.interval,
+      count: row.count,
+      oldestTimestamp: row.oldestTimestamp,
+      newestTimestamp: row.newestTimestamp,
+    }));
+  }
+
+  /**
+   * Delete candles with flexible filtering
+   */
+  deleteCandles(filters: {
+    provider?: string;
+    symbol?: string;
+    interval?: string;
+  }): number {
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (filters.provider) {
+      conditions.push('provider = ?');
+      params.push(filters.provider);
+    }
+
+    if (filters.symbol) {
+      conditions.push('symbol = ?');
+      params.push(filters.symbol);
+    }
+
+    if (filters.interval) {
+      conditions.push('interval = ?');
+      params.push(filters.interval);
+    }
+
+    if (conditions.length === 0) {
+      throw new Error('At least one filter is required for deletion');
+    }
+
+    const sql = `DELETE FROM candles WHERE ${conditions.join(' AND ')}`;
+    const stmt = this.db.prepare(sql);
+    const result = stmt.run(...params);
+
+    return result.changes;
+  }
+
+  /**
+   * Delete all candles (use with caution)
+   */
+  deleteAllCandles(): number {
+    const stmt = this.db.prepare('DELETE FROM candles');
+    const result = stmt.run();
+    return result.changes;
   }
 }
