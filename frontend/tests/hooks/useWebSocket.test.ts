@@ -10,7 +10,7 @@ describe('useWebSocket', () => {
   it('should initialize with disconnected state', () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -22,7 +22,7 @@ describe('useWebSocket', () => {
   it('should connect to WebSocket', async () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -35,7 +35,7 @@ describe('useWebSocket', () => {
   it('should send subscribe message when subscribe is called', async () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -59,7 +59,7 @@ describe('useWebSocket', () => {
   it('should send unsubscribe message when unsubscribe is called', async () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -83,7 +83,7 @@ describe('useWebSocket', () => {
   it('should not send messages when socket is not open', () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -98,7 +98,7 @@ describe('useWebSocket', () => {
   it('should clean up on unmount', async () => {
     const { result, unmount } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -117,7 +117,7 @@ describe('useWebSocket', () => {
   it('should have socket reference when connected', async () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -131,7 +131,7 @@ describe('useWebSocket', () => {
   it('should accept custom reconnection settings', () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         reconnectInterval: 100,
         maxReconnectAttempts: 5,
       })
@@ -143,7 +143,7 @@ describe('useWebSocket', () => {
   it('should handle multiple subscribe calls', async () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );
@@ -163,7 +163,7 @@ describe('useWebSocket', () => {
   it('should provide working subscribe and unsubscribe methods', async () => {
     const { result } = renderHook(() =>
       useWebSocket({
-        url: 'ws://localhost:3000/stream',
+        url: 'ws://localhost:4000/stream',
         maxReconnectAttempts: 0,
       })
     );

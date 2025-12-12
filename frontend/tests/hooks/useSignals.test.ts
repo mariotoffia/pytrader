@@ -13,7 +13,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: null,
         strategyId: 'ema_crossover_rsi',
       })
@@ -45,7 +45,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: null,
         strategyId: 'ema_crossover_rsi',
       })
@@ -69,7 +69,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: null,
         strategyId: 'ema_crossover_rsi',
       })
@@ -93,7 +93,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: null,
         strategyId: 'ema_crossover_rsi',
       })
@@ -130,7 +130,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: mockSocket as any,
         strategyId: 'ema_crossover_rsi',
       })
@@ -170,7 +170,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: mockSocket as any,
         strategyId: 'ema_crossover_rsi',
       })
@@ -196,7 +196,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: mockSocket as any,
         strategyId: 'ema_crossover_rsi',
       })
@@ -265,7 +265,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: mockSocket as any,
         strategyId: 'ema_crossover_rsi',
       })
@@ -314,7 +314,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: mockSocket as any,
         strategyId: 'ema_crossover_rsi',
       })
@@ -345,7 +345,7 @@ describe('useSignals', () => {
       useSignals({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         wsSocket: null,
         strategyId: 'ema_crossover_rsi',
       })
@@ -372,7 +372,7 @@ describe('useSignals', () => {
         useSignals({
           symbol,
           interval: '1m',
-          gatewayUrl: 'http://localhost:3000',
+          gatewayUrl: 'http://localhost:4000',
           wsSocket: null,
           strategyId: 'ema_crossover_rsi',
         }),

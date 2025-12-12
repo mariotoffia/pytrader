@@ -6,7 +6,7 @@ import { MarketDataConfigSchema } from '@pytrader/shared/schemas';
  */
 export function loadConfig(): MarketDataConfig {
   const config = {
-    port: parseInt(process.env.PORT || '3001', 10),
+    port: parseInt(process.env.PORT || '4001', 10),
     provider: (process.env.PROVIDER || 'mock') as 'binance' | 'coinbase' | 'mock',
     sqlitePath: process.env.SQLITE_PATH || './data/market-data.db',
     symbols: (process.env.SYMBOLS || 'BTC/USDT,ETH/USDT').split(',').map(s => s.trim()),

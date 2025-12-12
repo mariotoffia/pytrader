@@ -4,24 +4,24 @@
 
 **Complete Full-Stack Trading System:**
 
-1. **Market Data Service** (TypeScript) - Port 3001
+1. **Market Data Service** (TypeScript) - Port 4001
    - Binance, Coinbase, and Mock provider support
    - SQLite database with provider tracking
    - REST API for historical data
    - Automatic 24-hour backfill on startup
 
-2. **Gateway Service** (TypeScript) - Port 3000
+2. **Gateway Service** (TypeScript) - Port 4000
    - REST API (health, symbols, candles, indicators, signals)
    - WebSocket support with real-time signal broadcasting
    - Session management and subscription tracking
    - SignalPoller for 30-second updates
 
-3. **Analytics Service** (Python/FastAPI) - Port 3002
+3. **Analytics Service** (Python/FastAPI) - Port 4002
    - Technical indicators (EMA, RSI, Bollinger Bands)
    - Trading signals (EMA Crossover + RSI strategy)
    - Interactive API docs at `/docs`
 
-4. **Frontend** (React + Vite) - Port 5173
+4. **Frontend** (React + Vite) - Port 4003
    - TradingView Lightweight Charts
    - EMA 20 & 50 overlays (blue and orange lines)
    - Buy/sell signal markers with confidence scores
@@ -59,7 +59,7 @@ cd services/market-data
 npm install
 npm run dev
 ```
-Wait for: `Market Data Service listening on port 3001`
+Wait for: `Market Data Service listening on port 4001`
 
 **Terminal 2: Gateway Service**
 ```bash
@@ -67,13 +67,13 @@ cd services/gateway
 npm install
 npm run dev
 ```
-Wait for: `Gateway Service listening on port 3000`
+Wait for: `Gateway Service listening on port 4000`
 
 **Terminal 3: Analytics Service**
 ```bash
 cd services/analytics
 python -m src.main
-# or: uvicorn src.main:app --reload --port 3002
+# or: uvicorn src.main:app --reload --port 4002
 ```
 Wait for: `Application startup complete`
 
@@ -82,36 +82,36 @@ Wait for: `Application startup complete`
 cd frontend
 npm run dev
 ```
-Wait for: `Local: http://localhost:5173/`
+Wait for: `Local: http://localhost:4003/`
 
-**Open browser:** http://localhost:5173
+**Open browser:** http://localhost:4003
 
 ### 3. Test the System
 
 **Check Health:**
 ```bash
-curl http://localhost:3001/health  # Market Data
-curl http://localhost:3000/health  # Gateway
-curl http://localhost:3002/health  # Analytics
+curl http://localhost:4001/health  # Market Data
+curl http://localhost:4000/health  # Gateway
+curl http://localhost:4002/health  # Analytics
 ```
 
 **Get Historical Candles:**
 ```bash
 # Through Gateway (recommended)
-curl "http://localhost:3000/candles?symbol=BTC/USDT&interval=1m&from=1000000000000&to=9999999999999"
+curl "http://localhost:4000/candles?symbol=BTC/USDT&interval=1m&from=1000000000000&to=9999999999999"
 
 # Directly from Market Data (internal)
-curl "http://localhost:3001/internal/candles?symbol=BTC/USDT&interval=1m&from=1000000000000&to=9999999999999"
+curl "http://localhost:4001/internal/candles?symbol=BTC/USDT&interval=1m&from=1000000000000&to=9999999999999"
 ```
 
 **Get Supported Symbols:**
 ```bash
-curl http://localhost:3000/symbols
+curl http://localhost:4000/symbols
 ```
 
 **Calculate Indicators:**
 ```bash
-curl -X POST http://localhost:3002/internal/indicators \
+curl -X POST http://localhost:4002/internal/indicators \
   -H "Content-Type: application/json" \
   -d '{
     "symbol": "BTC/USDT",
@@ -124,7 +124,7 @@ curl -X POST http://localhost:3002/internal/indicators \
 
 **Generate Trading Signals:**
 ```bash
-curl -X POST http://localhost:3002/internal/signals \
+curl -X POST http://localhost:4002/internal/signals \
   -H "Content-Type: application/json" \
   -d '{
     "symbol": "BTC/USDT",
@@ -136,7 +136,7 @@ curl -X POST http://localhost:3002/internal/signals \
 ```
 
 **Interactive API Docs:**
-Open browser to http://localhost:3002/docs for Swagger UI
+Open browser to http://localhost:4002/docs for Swagger UI
 
 ## WebSocket Testing
 
@@ -144,7 +144,7 @@ Open browser to http://localhost:3002/docs for Swagger UI
 
 ```bash
 # Connect to Gateway WebSocket
-websocat ws://localhost:3000/stream
+websocat ws://localhost:4000/stream
 
 # Subscribe to BTC/USDT 1m candles
 {"type":"subscribe_candles","payload":{"symbol":"BTC/USDT","interval":"1m"}}
@@ -159,7 +159,7 @@ websocat ws://localhost:3000/stream
 ### Using wscat (install: `npm install -g wscat`)
 
 ```bash
-wscat -c ws://localhost:3000/stream
+wscat -c ws://localhost:4000/stream
 > {"type":"subscribe_candles","payload":{"symbol":"ETH/USDT","interval":"1m"}}
 ```
 
@@ -198,7 +198,7 @@ cp services/analytics/.env.example services/analytics/.env
 **Port already in use:**
 ```bash
 # Check what's using a port
-lsof -i :3001
+lsof -i :4001
 # Kill the process
 kill -9 <PID>
 ```

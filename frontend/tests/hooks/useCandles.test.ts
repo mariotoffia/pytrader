@@ -13,8 +13,8 @@ describe('useCandles', () => {
       useCandles({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
-        wsUrl: 'ws://localhost:3000/stream',
+        gatewayUrl: 'http://localhost:4000',
+        wsUrl: 'ws://localhost:4000/stream',
       })
     );
 
@@ -44,8 +44,8 @@ describe('useCandles', () => {
       useCandles({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
-        wsUrl: 'ws://localhost:3000/stream',
+        gatewayUrl: 'http://localhost:4000',
+        wsUrl: 'ws://localhost:4000/stream',
       })
     );
 
@@ -67,8 +67,8 @@ describe('useCandles', () => {
       useCandles({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
-        wsUrl: 'ws://localhost:3000/stream',
+        gatewayUrl: 'http://localhost:4000',
+        wsUrl: 'ws://localhost:4000/stream',
       })
     );
 
@@ -118,8 +118,8 @@ describe('useCandles', () => {
         useCandles({
           symbol,
           interval: '1m',
-          gatewayUrl: 'http://localhost:3000',
-          wsUrl: 'ws://localhost:3000/stream',
+          gatewayUrl: 'http://localhost:4000',
+          wsUrl: 'ws://localhost:4000/stream',
         }),
       { initialProps: { symbol: 'BTC/USDT' } }
     );
@@ -173,8 +173,8 @@ describe('useCandles', () => {
         useCandles({
           symbol: 'BTC/USDT',
           interval,
-          gatewayUrl: 'http://localhost:3000',
-          wsUrl: 'ws://localhost:3000/stream',
+          gatewayUrl: 'http://localhost:4000',
+          wsUrl: 'ws://localhost:4000/stream',
         }),
       { initialProps: { interval: '1m' as const } }
     );
@@ -200,8 +200,8 @@ describe('useCandles', () => {
       useCandles({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
-        wsUrl: 'ws://localhost:3000/stream',
+        gatewayUrl: 'http://localhost:4000',
+        wsUrl: 'ws://localhost:4000/stream',
       })
     );
 
@@ -210,7 +210,7 @@ describe('useCandles', () => {
     });
 
     const fetchCall = vi.mocked(fetch).mock.calls[0][0] as string;
-    expect(fetchCall).toContain('http://localhost:3000/candles');
+    expect(fetchCall).toContain('http://localhost:4000/candles');
     expect(fetchCall).toContain('symbol=BTC%2FUSDT');
     expect(fetchCall).toContain('interval=1m');
     expect(fetchCall).toContain('from=');
@@ -224,8 +224,8 @@ describe('useCandles', () => {
       useCandles({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
-        wsUrl: 'ws://localhost:3000/stream',
+        gatewayUrl: 'http://localhost:4000',
+        wsUrl: 'ws://localhost:4000/stream',
       })
     );
 
@@ -249,8 +249,8 @@ describe('useCandles', () => {
       useCandles({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
-        wsUrl: 'ws://localhost:3000/stream',
+        gatewayUrl: 'http://localhost:4000',
+        wsUrl: 'ws://localhost:4000/stream',
       })
     );
 

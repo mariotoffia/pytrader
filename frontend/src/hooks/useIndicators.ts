@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Interval } from '../types';
 
 export interface IndicatorResult {
@@ -10,6 +10,9 @@ export interface IndicatorData {
   ema_20?: IndicatorResult[];
   ema_50?: IndicatorResult[];
   rsi_14?: IndicatorResult[];
+  bb_upper?: IndicatorResult[];
+  bb_middle?: IndicatorResult[];
+  bb_lower?: IndicatorResult[];
 }
 
 interface UseIndicatorsOptions {
@@ -49,7 +52,7 @@ export function useIndicators({ symbol, interval, gatewayUrl, candles }: UseIndi
             interval,
             from,
             to,
-            indicators: ['ema_20', 'ema_50', 'rsi_14'],
+            indicators: ['ema_20', 'ema_50', 'rsi_14', 'bollinger_bands'],
           }),
         });
 

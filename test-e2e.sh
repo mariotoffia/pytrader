@@ -16,9 +16,9 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-MARKET_DATA_URL="http://localhost:3001"
+MARKET_DATA_URL="http://localhost:4001"
 GATEWAY_URL="http://localhost:4000"
-ANALYTICS_URL="http://localhost:3002"
+ANALYTICS_URL="http://localhost:4002"
 WEBSOCKET_URL="ws://localhost:4000/stream"
 
 # Test functions
@@ -156,7 +156,7 @@ main() {
     echo "  - Analytics calculating indicators & signals"
     echo ""
     echo "🌐 Access Points:"
-    echo "  - Frontend: http://localhost:5173"
+    echo "  - Frontend: http://localhost:4003"
     echo "  - Gateway API: $GATEWAY_URL"
     echo "  - Analytics Docs: $ANALYTICS_URL/docs"
     echo ""

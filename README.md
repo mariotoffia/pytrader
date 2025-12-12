@@ -40,7 +40,7 @@ This single command will:
 2. Install all packages
 3. Build all projects
 4. Start all services in background
-5. Open at http://localhost:5173
+5. Open at http://localhost:4003
 
 ### Option 2: Manual Setup
 
@@ -57,7 +57,7 @@ make build
 # 4. Start services
 make serve-all
 
-# Open browser to http://localhost:5173
+# Open browser to http://localhost:4003
 ```
 
 ### Stop Services
@@ -130,16 +130,16 @@ Edit the `.env` files to configure:
 **Option A: Start each service in separate terminals**
 
 ```bash
-# Terminal 1: Market Data Service (port 3001)
+# Terminal 1: Market Data Service (port 4001)
 npm run dev:market-data
 
-# Terminal 2: Gateway Service (port 3000)
+# Terminal 2: Gateway Service (port 4000)
 npm run dev:gateway
 
-# Terminal 3: Analytics Service (port 3002)
+# Terminal 3: Analytics Service (port 4002)
 npm run dev:analytics
 
-# Terminal 4: Frontend (port 5173)
+# Terminal 4: Frontend (port 4003)
 npm run dev:frontend
 ```
 
@@ -155,10 +155,10 @@ npm run dev:frontend
 ### 4. Access the Application
 
 Open your browser to:
-- **Frontend**: http://localhost:5173
-- **Gateway API**: http://localhost:3000/health
-- **Market Data API**: http://localhost:3001/health (internal)
-- **Analytics API**: http://localhost:3002/docs (FastAPI Swagger UI)
+- **Frontend**: http://localhost:4003
+- **Gateway API**: http://localhost:4000/health
+- **Market Data API**: http://localhost:4001/health (internal)
+- **Analytics API**: http://localhost:4002/docs (FastAPI Swagger UI)
 
 ## Project Structure
 
@@ -180,7 +180,7 @@ pytrader/
 
 `.env` example:
 ```bash
-PORT=3001
+PORT=4001
 PROVIDER=mock              # binance | coinbase | mock
 SQLITE_PATH=./data.db
 SYMBOLS=BTC/USDT,ETH/USDT
@@ -191,9 +191,9 @@ LOG_LEVEL=info
 
 `.env` example:
 ```bash
-PORT=3000
-MARKET_DATA_URL=http://localhost:3001
-ANALYTICS_URL=http://localhost:3002
+PORT=4000
+MARKET_DATA_URL=http://localhost:4001
+ANALYTICS_URL=http://localhost:4002
 WS_MAX_CONNECTIONS=100
 LOG_LEVEL=info
 ```
@@ -202,8 +202,8 @@ LOG_LEVEL=info
 
 `.env` example:
 ```bash
-PORT=3002
-MARKET_DATA_URL=http://localhost:3001
+PORT=4002
+MARKET_DATA_URL=http://localhost:4001
 LOG_LEVEL=info
 ```
 
@@ -252,7 +252,7 @@ wc -l path/to/file.ts
 
 ### Gateway Service WebSocket
 
-Connect to `ws://localhost:3000/stream`
+Connect to `ws://localhost:4000/stream`
 
 **Subscribe to candles:**
 ```json
@@ -303,7 +303,7 @@ Connect to `ws://localhost:3000/stream`
 
 ### Analytics Service
 
-Visit http://localhost:3002/docs for interactive Swagger documentation.
+Visit http://localhost:4002/docs for interactive Swagger documentation.
 
 **Calculate indicators:**
 ```bash
@@ -364,18 +364,18 @@ Default strategy implemented in analytics service:
 1. Check Node.js version: `node --version` (should be ≥ 20.0.0)
 2. Check Python version: `python --version` (should be ≥ 3.11)
 3. Ensure all dependencies are installed: `npm install`
-4. Check port availability: `lsof -i :3000` (Gateway), `:3001` (Market Data), `:3002` (Analytics)
+4. Check port availability: `lsof -i :4000` (Gateway), `:4001` (Market Data), `:4002` (Analytics)
 
 ### No data in charts
 
-1. Verify market-data service is running: `curl http://localhost:3001/health`
+1. Verify market-data service is running: `curl http://localhost:4001/health`
 2. Check provider configuration in `.env`
 3. View logs for errors
 4. Try mock provider first: `PROVIDER=mock`
 
 ### WebSocket connection fails
 
-1. Verify gateway service is running: `curl http://localhost:3000/health`
+1. Verify gateway service is running: `curl http://localhost:4000/health`
 2. Check browser console for errors
 3. Ensure no firewall blocking WebSocket connections
 

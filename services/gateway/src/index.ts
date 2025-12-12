@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
+import cors from '@fastify/cors';
 import { loadConfig } from './config.js';
 import { MarketDataClient } from './clients/marketDataClient.js';
 import { AnalyticsClient } from './clients/analyticsClient.js';
@@ -99,6 +100,12 @@ class GatewayService {
    */
   async start(): Promise<void> {
     try {
+      // Register CORS support
+      await this.fastify.register(cors, {
+        origin: true, // Allow all origins in development
+        credentials: true,
+      });
+
       // Register WebSocket support
       await this.registerWebSocket();
 
@@ -122,7 +129,8 @@ class GatewayService {
       this.fastify.log.info(`WebSocket endpoint: ws://localhost:${this.config.port}/stream`);
       this.fastify.log.info(`REST API: http://localhost:${this.config.port}`);
     } catch (error) {
-      this.fastify.log.error('Failed to start service:', error);
+      this.fastify.log.error({ err: error }, 'Failed to start service');
+      console.error('Failed to start service:', error);
       process.exit(1);
     }
   }

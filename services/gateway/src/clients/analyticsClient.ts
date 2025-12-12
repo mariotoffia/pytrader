@@ -59,12 +59,13 @@ export class AnalyticsClient {
     strategyId: string
   ): Promise<Signal[]> {
     const url = `${this.baseUrl}/internal/signals`;
-    const body: GenerateSignalsRequest = {
+    // Convert to snake_case for Python API
+    const body = {
       symbol,
       interval,
       from,
       to,
-      strategyId,
+      strategy_id: strategyId,
     };
 
     const response = await fetch(url, {

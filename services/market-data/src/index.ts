@@ -164,7 +164,8 @@ class MarketDataService {
 
       this.fastify.log.info(`Market Data Service listening on port ${this.config.port}`);
     } catch (error) {
-      this.fastify.log.error('Failed to start service:', error);
+      this.fastify.log.error({ err: error }, 'Failed to start service');
+      console.error('Failed to start service:', error);
       process.exit(1);
     }
   }

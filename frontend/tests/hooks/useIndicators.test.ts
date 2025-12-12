@@ -13,7 +13,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: [],
       })
     );
@@ -28,7 +28,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: [],
       })
     );
@@ -72,7 +72,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: mockCandles,
       })
     );
@@ -82,7 +82,7 @@ describe('useIndicators', () => {
     });
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:3000/indicators',
+      'http://localhost:4000/indicators',
       expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,7 +120,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: mockCandles,
       })
     );
@@ -152,7 +152,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: mockCandles,
       })
     );
@@ -206,7 +206,7 @@ describe('useIndicators', () => {
         useIndicators({
           symbol: 'BTC/USDT',
           interval: '1m',
-          gatewayUrl: 'http://localhost:3000',
+          gatewayUrl: 'http://localhost:4000',
           candles,
         }),
       { initialProps: { candles: mockCandles1 } }
@@ -244,7 +244,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: mockCandles,
       })
     );
@@ -261,7 +261,7 @@ describe('useIndicators', () => {
       interval: '1m',
       from: 1000000,
       to: 1000000,
-      indicators: ['ema_20', 'ema_50', 'rsi_14'],
+      indicators: ['ema_20', 'ema_50', 'rsi_14', 'bollinger_bands'],
     });
   });
 
@@ -285,7 +285,7 @@ describe('useIndicators', () => {
       useIndicators({
         symbol: 'BTC/USDT',
         interval: '1m',
-        gatewayUrl: 'http://localhost:3000',
+        gatewayUrl: 'http://localhost:4000',
         candles: mockCandles,
       })
     );

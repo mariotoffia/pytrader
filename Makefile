@@ -126,7 +126,7 @@ serve: ## Start all services in development mode (requires 4 terminals)
 	@echo "  cd services/gateway && npm run dev"
 	@echo ""
 	@echo "$(GREEN)Terminal 3 - Analytics Service:$(NC)"
-	@echo "  cd services/analytics && uvicorn src.main:app --reload --port 3002"
+	@echo "  cd services/analytics && uvicorn src.main:app --reload --port 4002"
 	@echo ""
 	@echo "$(GREEN)Terminal 4 - Frontend:$(NC)"
 	@echo "  cd frontend && npm run dev"
@@ -135,54 +135,72 @@ serve: ## Start all services in development mode (requires 4 terminals)
 
 serve-all: ## Start all services in background (use 'make stop' to stop)
 	@echo "$(BLUE)Starting all services in background...$(NC)"
+	@mkdir -p logs
 	@echo ""
-	@echo "$(YELLOW)→ Starting Market Data Service on port 3001...$(NC)"
-	@cd services/market-data && npm run dev > ../../logs/market-data.log 2>&1 & echo $$! > ../../.pid-market-data
-	@sleep 2
-	@echo "$(YELLOW)→ Starting Gateway Service on port 3000...$(NC)"
-	@cd services/gateway && npm run dev > ../../logs/gateway.log 2>&1 & echo $$! > ../../.pid-gateway
-	@sleep 2
-	@echo "$(YELLOW)→ Starting Analytics Service on port 3002...$(NC)"
-	@cd services/analytics && uvicorn src.main:app --reload --port 3002 > ../../logs/analytics.log 2>&1 & echo $$! > ../../.pid-analytics
-	@sleep 2
-	@echo "$(YELLOW)→ Starting Frontend on port 5173...$(NC)"
-	@cd frontend && npm run dev > ../logs/frontend.log 2>&1 & echo $$! > ../.pid-frontend
-	@sleep 2
+	@if lsof -Pi :4001 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		echo "$(YELLOW)→ Market Data Service already running on port 4001, skipping...$(NC)"; \
+	else \
+		echo "$(YELLOW)→ Starting Market Data Service on port 4001...$(NC)"; \
+		cd services/market-data && npm run dev > ../../logs/market-data.log 2>&1 & echo $$! > ../../.pid-market-data; \
+		sleep 2; \
+	fi
+	@if lsof -Pi :4000 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		echo "$(YELLOW)→ Gateway Service already running on port 4000, skipping...$(NC)"; \
+	else \
+		echo "$(YELLOW)→ Starting Gateway Service on port 4000...$(NC)"; \
+		cd services/gateway && npm run dev > ../../logs/gateway.log 2>&1 & echo $$! > ../../.pid-gateway; \
+		sleep 2; \
+	fi
+	@if lsof -Pi :4002 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		echo "$(YELLOW)→ Analytics Service already running on port 4002, skipping...$(NC)"; \
+	else \
+		echo "$(YELLOW)→ Starting Analytics Service on port 4002...$(NC)"; \
+		cd services/analytics && .venv/bin/uvicorn src.main:app --reload --port 4002 > ../../logs/analytics.log 2>&1 & echo $$! > ../../.pid-analytics; \
+		sleep 2; \
+	fi
+	@if lsof -Pi :4003 -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		echo "$(YELLOW)→ Frontend already running on port 4003, skipping...$(NC)"; \
+	else \
+		echo "$(YELLOW)→ Starting Frontend on port 4003...$(NC)"; \
+		cd frontend && npm run dev > ../logs/frontend.log 2>&1 & echo $$! > ../.pid-frontend; \
+		sleep 2; \
+	fi
 	@echo ""
-	@echo "$(GREEN)✓ All services started!$(NC)"
+	@echo "$(GREEN)✓ All services checked/started!$(NC)"
 	@echo ""
 	@echo "$(BLUE)Access points:$(NC)"
-	@echo "  Frontend:     http://localhost:5173"
-	@echo "  Gateway API:  http://localhost:3000"
-	@echo "  Market Data:  http://localhost:3001"
-	@echo "  Analytics:    http://localhost:3002"
-	@echo "  API Docs:     http://localhost:3002/docs"
+	@echo "  Frontend:     http://localhost:4003"
+	@echo "  Gateway API:  http://localhost:4000"
+	@echo "  Market Data:  http://localhost:4001"
+	@echo "  Analytics:    http://localhost:4002"
+	@echo "  API Docs:     http://localhost:4002/docs"
 	@echo ""
 	@echo "$(YELLOW)Logs are in ./logs/$(NC)"
 	@echo "$(YELLOW)Use 'make stop' to stop all services$(NC)"
+	@echo "$(YELLOW)Use 'make status' to check service status$(NC)"
 	@echo "$(YELLOW)Use 'make logs' to tail all logs$(NC)"
 
 stop: ## Stop all background services
 	@echo "$(BLUE)Stopping all services...$(NC)"
 	@if [ -f .pid-market-data ]; then \
-		kill $$(cat .pid-market-data) 2>/dev/null || true; \
+		PID=$$(cat .pid-market-data); \
+		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Market Data Service stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Market Data Service not running$(NC)"; \
 		rm .pid-market-data; \
-		echo "$(GREEN)✓ Market Data Service stopped$(NC)"; \
 	fi
 	@if [ -f .pid-gateway ]; then \
-		kill $$(cat .pid-gateway) 2>/dev/null || true; \
+		PID=$$(cat .pid-gateway); \
+		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Gateway Service stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Gateway Service not running$(NC)"; \
 		rm .pid-gateway; \
-		echo "$(GREEN)✓ Gateway Service stopped$(NC)"; \
 	fi
 	@if [ -f .pid-analytics ]; then \
-		kill $$(cat .pid-analytics) 2>/dev/null || true; \
+		PID=$$(cat .pid-analytics); \
+		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Analytics Service stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Analytics Service not running$(NC)"; \
 		rm .pid-analytics; \
-		echo "$(GREEN)✓ Analytics Service stopped$(NC)"; \
 	fi
 	@if [ -f .pid-frontend ]; then \
-		kill $$(cat .pid-frontend) 2>/dev/null || true; \
+		PID=$$(cat .pid-frontend); \
+		kill $$PID 2>/dev/null && echo "$(GREEN)✓ Frontend stopped (PID $$PID)$(NC)" || echo "$(YELLOW)⚠ Frontend not running$(NC)"; \
 		rm .pid-frontend; \
-		echo "$(GREEN)✓ Frontend stopped$(NC)"; \
 	fi
 	@echo ""
 	@echo "$(GREEN)✓ All services stopped!$(NC)"

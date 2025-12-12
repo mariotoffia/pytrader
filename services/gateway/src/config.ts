@@ -6,9 +6,9 @@ import { GatewayConfigSchema } from '@pytrader/shared/schemas';
  */
 export function loadConfig(): GatewayConfig {
   const config = {
-    port: parseInt(process.env.PORT || '3000', 10),
-    marketDataUrl: process.env.MARKET_DATA_URL || 'http://localhost:3001',
-    analyticsUrl: process.env.ANALYTICS_URL || 'http://localhost:3002',
+    port: parseInt(process.env.PORT || '4000', 10),
+    marketDataUrl: process.env.MARKET_DATA_URL || 'http://localhost:4001',
+    analyticsUrl: process.env.ANALYTICS_URL || 'http://localhost:4002',
     wsMaxConnections: parseInt(process.env.WS_MAX_CONNECTIONS || '100', 10),
     logLevel: (process.env.LOG_LEVEL || 'info') as 'debug' | 'info' | 'warn' | 'error',
   };

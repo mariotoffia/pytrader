@@ -7,15 +7,23 @@ import { useIndicators } from './hooks/useIndicators';
 import { useSignals } from './hooks/useSignals';
 import { useWebSocket } from './hooks/useWebSocket';
 import { Interval } from './types';
+import config from './config';
 
-const GATEWAY_URL = 'http://localhost:3000';
-const WS_URL = 'ws://localhost:3000/stream';
+const GATEWAY_URL = config.gatewayUrl;
+const WS_URL = config.wsUrl;
 
 function App() {
   const [symbol, setSymbol] = useState('BTC/USDT');
   const [interval, setInterval] = useState<Interval>('1m');
 
-  const { candles, loading, error, isConnected } = useCandles({
+  // Create a single shared WebSocket connection
+  const { socket, isConnected } = useWebSocket({
+    url: WS_URL,
+    onMessage: () => {}, // Messages handled by individual hooks
+  });
+
+  // Use the shared WebSocket for candles
+  const { candles, loading, error } = useCandles({
     symbol,
     interval,
     gatewayUrl: GATEWAY_URL,
@@ -30,13 +38,7 @@ function App() {
     candles,
   });
 
-  // Get WebSocket connection for signal subscriptions
-  const { socket } = useWebSocket({
-    url: WS_URL,
-    onMessage: () => {}, // Handled by useSignals
-  });
-
-  // Fetch and subscribe to trading signals
+  // Fetch and subscribe to trading signals using the shared socket
   const { signals } = useSignals({
     symbol,
     interval,
