@@ -1,6 +1,7 @@
 """Analytics Service - FastAPI application"""
 import time
-from fastapi import FastAPI
+import uuid
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import indicators, signals
 from .models import HealthResponse
@@ -20,6 +21,24 @@ app = FastAPI(
     description="Technical indicators and trading signals",
     version="1.0.0",
 )
+
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+    request.state.request_id = request_id
+
+    start = time.time()
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed_ms = int((time.time() - start) * 1000)
+        logger.exception(f"[{request_id}] {request.method} {request.url.path} -> unhandled error ({elapsed_ms}ms)")
+        raise
+
+    elapsed_ms = int((time.time() - start) * 1000)
+    response.headers["x-request-id"] = request_id
+    logger.info(f"[{request_id}] {request.method} {request.url.path} -> {response.status_code} ({elapsed_ms}ms)")
+    return response
 
 # Add CORS middleware
 app.add_middleware(

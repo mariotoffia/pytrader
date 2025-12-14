@@ -38,6 +38,7 @@ describe('Indicator Routes', () => {
         method: 'POST',
         url: '/indicators',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,
@@ -49,11 +50,13 @@ describe('Indicator Routes', () => {
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual({ results: mockResults });
       expect(mockAnalyticsClient.calculateIndicators).toHaveBeenCalledWith(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
         2000000,
-        ['ema_20', 'ema_50', 'rsi_14']
+        ['ema_20', 'ema_50', 'rsi_14'],
+        expect.any(Object)
       );
     });
 
@@ -79,6 +82,7 @@ describe('Indicator Routes', () => {
         method: 'POST',
         url: '/indicators',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,
@@ -97,6 +101,7 @@ describe('Indicator Routes', () => {
         method: 'POST',
         url: '/indicators',
         payload: {
+          provider: 'mock',
           symbol: 'ETH/USDT',
           interval: '5m',
           from: 1000000,
@@ -107,11 +112,13 @@ describe('Indicator Routes', () => {
 
       expect(response.statusCode).toBe(200);
       expect(mockAnalyticsClient.calculateIndicators).toHaveBeenCalledWith(
+        'mock',
         'ETH/USDT',
         '5m',
         1000000,
         2000000,
-        ['ema_20', 'ema_50', 'rsi_14', 'bb_upper', 'bb_middle', 'bb_lower']
+        ['ema_20', 'ema_50', 'rsi_14', 'bb_upper', 'bb_middle', 'bb_lower'],
+        expect.any(Object)
       );
     });
 
@@ -122,6 +129,7 @@ describe('Indicator Routes', () => {
         method: 'POST',
         url: '/indicators',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,

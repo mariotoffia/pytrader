@@ -212,6 +212,7 @@ export const GetSymbolsResponseSchema = z.object({
 });
 
 export const CalculateIndicatorsRequestSchema = z.object({
+  provider: DataProviderSchema,
   symbol: z.string().min(1),
   interval: IntervalSchema,
   from: z.number().int().positive(),
@@ -227,6 +228,7 @@ export const CalculateIndicatorsResponseSchema = z.object({
 });
 
 export const GenerateSignalsRequestSchema = z.object({
+  provider: DataProviderSchema,
   symbol: z.string().min(1),
   interval: IntervalSchema,
   from: z.number().int().positive(),

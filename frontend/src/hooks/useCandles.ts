@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { OHLCVCandle, Interval, CandleUpdateMessage, DataProvider } from '../types';
 import { useWebSocket } from './useWebSocket';
+import { debugLog } from '../utils/debug';
+import { fetchJson, HttpError } from '../utils/http';
 
 interface UseCandlesOptions {
   provider: DataProvider;
@@ -46,6 +48,7 @@ export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: Us
   const { isConnected, subscribe, unsubscribe } = useWebSocket({
     url: wsUrl,
     onMessage: handleWebSocketMessage,
+    debugLabel: 'candles',
   });
 
   // Fetch historical candles
@@ -65,14 +68,26 @@ export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: Us
         to: now.toString(),
       });
 
-      const response = await fetch(`${gatewayUrl}/candles?${params}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch candles: ${response.statusText}`);
-      }
+      const url = `${gatewayUrl}/candles?${params}`;
+      debugLog('candles', 'fetch historical', { provider, symbol, interval, url });
 
-      const data = await response.json();
+      const { data, requestId } = await fetchJson<{ candles: OHLCVCandle[] }>(
+        url,
+        { method: 'GET' },
+        { scope: 'candles', requestName: 'candles' }
+      );
+
+      debugLog('candles', 'fetched historical', { requestId, count: data.candles?.length ?? 0 });
       setCandles(data.candles || []);
     } catch (err) {
+      if (err instanceof HttpError) {
+        debugLog('candles', 'fetch error', err.details);
+        const message = `Failed to fetch candles: ${err.details.status ?? ''} ${err.details.statusText ?? ''} (requestId: ${err.details.requestId})`;
+        setError(message);
+        console.error('Error fetching candles:', err.details);
+        return;
+      }
+
       const message = err instanceof Error ? err.message : 'Failed to fetch candles';
       setError(message);
       console.error('Error fetching candles:', err);

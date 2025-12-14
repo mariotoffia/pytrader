@@ -4,6 +4,7 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
+import { randomUUID } from 'crypto';
 import { loadConfig } from './config.js';
 import { MarketDataClient } from './clients/marketDataClient.js';
 import { AnalyticsClient } from './clients/analyticsClient.js';
@@ -38,6 +39,8 @@ class GatewayService {
       logger: {
         level: this.config.logLevel,
       },
+      requestIdHeader: 'x-request-id',
+      genReqId: (req) => (req.headers['x-request-id'] as string | undefined) ?? randomUUID(),
     });
 
     // Initialize clients
@@ -48,6 +51,46 @@ class GatewayService {
     this.sessionManager = new SessionManager();
     this.signalPoller = new SignalPoller(this.analyticsClient, this.fastify.log);
     this.wsHandler = new WebSocketHandler(this.sessionManager, this.fastify.log, this.signalPoller);
+
+    const traceRequests = process.env.TRACE_REQUESTS === '1';
+
+    this.fastify.addHook('onRequest', async (request, reply) => {
+      reply.header('x-request-id', request.id);
+      if (!traceRequests) return;
+      this.fastify.log.info(
+        {
+          requestId: request.id,
+          method: request.method,
+          url: request.url,
+          remoteAddress: request.ip,
+        },
+        'Incoming request'
+      );
+    });
+
+    this.fastify.addHook('preHandler', async (request) => {
+      if (!traceRequests) return;
+      if (request.method === 'GET' || request.method === 'HEAD') return;
+      this.fastify.log.info({ requestId: request.id, body: request.body }, 'Request body');
+    });
+
+    this.fastify.addHook('onResponse', async (request, reply) => {
+      if (!traceRequests) return;
+      this.fastify.log.info(
+        {
+          requestId: request.id,
+          method: request.method,
+          url: request.url,
+          statusCode: reply.statusCode,
+        },
+        'Request completed'
+      );
+    });
+
+    this.fastify.addHook('onError', async (request, _reply, error) => {
+      if (!traceRequests) return;
+      this.fastify.log.error({ requestId: request.id, err: error }, 'Request error');
+    });
   }
 
   /**

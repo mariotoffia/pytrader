@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Chart } from '../components/Chart';
 import { SymbolSelector } from '../components/SymbolSelector';
 import { IntervalSelector } from '../components/IntervalSelector';
@@ -39,7 +39,7 @@ export function Dashboard() {
   const { config: appConfig } = useConfig();
 
   // Get symbols from config for current provider
-  const providerSymbols = appConfig?.providers[provider]?.symbols || [];
+  const providerSymbols = appConfig?.providers?.[provider]?.symbols || [];
 
   // Validate and update symbol when provider changes
   useEffect(() => {
@@ -64,9 +64,11 @@ export function Dashboard() {
   }, [interval]);
 
   // Create a single shared WebSocket connection
+  const handleDashboardMessage = useCallback(() => {}, []);
   const { socket, isConnected } = useWebSocket({
     url: WS_URL,
-    onMessage: () => {}, // Messages handled by individual hooks
+    onMessage: handleDashboardMessage, // Messages handled by individual hooks
+    debugLabel: 'dashboard',
   });
 
   // Use the shared WebSocket for candles

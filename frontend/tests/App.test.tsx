@@ -12,6 +12,7 @@ describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(fetch).mockClear();
+    localStorage.clear();
 
     // Mock fetch to handle different endpoints
     vi.mocked(fetch).mockImplementation((url: string | Request | URL) => {

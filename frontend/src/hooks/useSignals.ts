@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Signal, Interval } from '../types';
+import { debugLog } from '../utils/debug';
+import { fetchJson, HttpError } from '../utils/http';
 
 interface UseSignalsOptions {
   provider: string;
@@ -31,26 +33,38 @@ export function useSignals({
       const now = Date.now();
       const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
-      const response = await fetch(`${gatewayUrl}/signals`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider,
-          symbol,
-          interval,
-          from: oneDayAgo,
-          to: now,
-          strategyId,
-        }),
-      });
+      const payload = {
+        provider,
+        symbol,
+        interval,
+        from: oneDayAgo,
+        to: now,
+        strategyId,
+      };
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch signals: ${response.statusText}`);
-      }
+      debugLog('signals', 'fetch historical', payload);
 
-      const data = await response.json();
+      const { data, requestId } = await fetchJson<{ signals: Signal[] }>(
+        `${gatewayUrl}/signals`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+        { scope: 'signals', requestName: 'signals' }
+      );
+
+      debugLog('signals', 'fetched historical', { requestId, count: data.signals?.length ?? 0 });
       setSignals(data.signals || []);
     } catch (err) {
+      if (err instanceof HttpError) {
+        debugLog('signals', 'fetch error', err.details);
+        const message = `Failed to fetch signals: ${err.details.status ?? ''} ${err.details.statusText ?? ''} (requestId: ${err.details.requestId})`;
+        setError(message);
+        console.error('Error fetching signals:', err.details);
+        return;
+      }
+
       const message = err instanceof Error ? err.message : 'Failed to fetch signals';
       setError(message);
       console.error('Error fetching signals:', err);
@@ -67,6 +81,7 @@ export function useSignals({
   // Subscribe to real-time signal updates via WebSocket
   useEffect(() => {
     if (!wsSocket || wsSocket.readyState !== WebSocket.OPEN) {
+      debugLog('signals', 'ws not ready for subscribe', { readyState: wsSocket?.readyState });
       return;
     }
 
@@ -75,6 +90,7 @@ export function useSignals({
       payload: { symbol, interval, strategyId },
     };
 
+    debugLog('signals', 'ws subscribe_signals', subscribeMessage);
     wsSocket.send(JSON.stringify(subscribeMessage));
 
     // Handle incoming signal updates
@@ -114,6 +130,7 @@ export function useSignals({
           type: 'unsubscribe_signals',
           payload: { symbol, interval, strategyId },
         };
+        debugLog('signals', 'ws unsubscribe_signals', unsubscribeMessage);
         wsSocket.send(JSON.stringify(unsubscribeMessage));
       }
     };

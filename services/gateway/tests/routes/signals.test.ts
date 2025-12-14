@@ -40,6 +40,7 @@ describe('Signal Routes', () => {
         method: 'POST',
         url: '/signals',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,
@@ -51,11 +52,13 @@ describe('Signal Routes', () => {
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual({ signals: mockSignals });
       expect(mockAnalyticsClient.generateSignals).toHaveBeenCalledWith(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
         2000000,
-        'ema_crossover_rsi'
+        'ema_crossover_rsi',
+        expect.any(Object)
       );
     });
 
@@ -81,6 +84,7 @@ describe('Signal Routes', () => {
         method: 'POST',
         url: '/signals',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,
@@ -102,6 +106,7 @@ describe('Signal Routes', () => {
           method: 'POST',
           url: '/signals',
           payload: {
+            provider: 'mock',
             symbol: 'ETH/USDT',
             interval: '5m',
             from: 1000000,
@@ -112,11 +117,13 @@ describe('Signal Routes', () => {
 
         expect(response.statusCode).toBe(200);
         expect(mockAnalyticsClient.generateSignals).toHaveBeenCalledWith(
+          'mock',
           'ETH/USDT',
           '5m',
           1000000,
           2000000,
-          strategyId
+          strategyId,
+          expect.any(Object)
         );
       }
     });
@@ -139,6 +146,7 @@ describe('Signal Routes', () => {
         method: 'POST',
         url: '/signals',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,
@@ -158,6 +166,7 @@ describe('Signal Routes', () => {
         method: 'POST',
         url: '/signals',
         payload: {
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           from: 1000000,

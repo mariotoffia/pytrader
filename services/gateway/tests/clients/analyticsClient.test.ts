@@ -30,6 +30,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const results = await client.calculateIndicators(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -44,6 +45,7 @@ describe('AnalyticsClient', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            provider: 'mock',
             symbol: 'BTC/USDT',
             interval: '1m',
             from: 1000000,
@@ -57,12 +59,13 @@ describe('AnalyticsClient', () => {
     it('should throw error on failed response', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
+        status: 500,
         statusText: 'Internal Server Error',
       } as Response);
 
       await expect(
-        client.calculateIndicators('BTC/USDT', '1m', 1000000, 2000000, ['ema_20'])
-      ).rejects.toThrow('Analytics Service error: Internal Server Error');
+        client.calculateIndicators('mock', 'BTC/USDT', '1m', 1000000, 2000000, ['ema_20'])
+      ).rejects.toThrow('Analytics Service error: 500 Internal Server Error');
     });
 
     it('should handle empty results array', async () => {
@@ -72,6 +75,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const results = await client.calculateIndicators(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -88,7 +92,7 @@ describe('AnalyticsClient', () => {
         json: async () => ({ results: [] }),
       } as Response);
 
-      await client.calculateIndicators('ETH/USDT', '5m', 5000000, 6000000, [
+      await client.calculateIndicators('mock', 'ETH/USDT', '5m', 5000000, 6000000, [
         'ema_20',
         'ema_50',
         'rsi_14',
@@ -113,7 +117,7 @@ describe('AnalyticsClient', () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
       await expect(
-        client.calculateIndicators('BTC/USDT', '1m', 1000000, 2000000, ['ema_20'])
+        client.calculateIndicators('mock', 'BTC/USDT', '1m', 1000000, 2000000, ['ema_20'])
       ).rejects.toThrow('Network error');
     });
   });
@@ -137,6 +141,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const signals = await client.generateSignals(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -151,6 +156,7 @@ describe('AnalyticsClient', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            provider: 'mock',
             symbol: 'BTC/USDT',
             interval: '1m',
             from: 1000000,
@@ -164,12 +170,13 @@ describe('AnalyticsClient', () => {
     it('should throw error on failed response', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
+        status: 400,
         statusText: 'Bad Request',
       } as Response);
 
       await expect(
-        client.generateSignals('BTC/USDT', '1m', 1000000, 2000000, 'invalid_strategy')
-      ).rejects.toThrow('Analytics Service error: Bad Request');
+        client.generateSignals('mock', 'BTC/USDT', '1m', 1000000, 2000000, 'invalid_strategy')
+      ).rejects.toThrow('Analytics Service error: 400 Bad Request');
     });
 
     it('should handle empty signals array', async () => {
@@ -179,6 +186,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const signals = await client.generateSignals(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -198,7 +206,7 @@ describe('AnalyticsClient', () => {
           json: async () => ({ signals: [] }),
         } as Response);
 
-        await client.generateSignals('ETH/USDT', '5m', 5000000, 6000000, strategyId);
+        await client.generateSignals('mock', 'ETH/USDT', '5m', 5000000, 6000000, strategyId);
 
         const callBody = JSON.parse(
           vi.mocked(fetch).mock.calls[vi.mocked(fetch).mock.calls.length - 1][1]
@@ -227,6 +235,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const signals = await client.generateSignals(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -256,6 +265,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const signals = await client.generateSignals(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -285,6 +295,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       const signals = await client.generateSignals(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -299,7 +310,7 @@ describe('AnalyticsClient', () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
       await expect(
-        client.generateSignals('BTC/USDT', '1m', 1000000, 2000000, 'ema_crossover_rsi')
+        client.generateSignals('mock', 'BTC/USDT', '1m', 1000000, 2000000, 'ema_crossover_rsi')
       ).rejects.toThrow('Network error');
     });
   });
@@ -345,7 +356,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       await expect(
-        client.calculateIndicators('BTC/USDT', '1m', 1000000, 2000000, ['ema_20'])
+        client.calculateIndicators('mock', 'BTC/USDT', '1m', 1000000, 2000000, ['ema_20'])
       ).rejects.toThrow('Invalid JSON');
     });
 
@@ -358,7 +369,7 @@ describe('AnalyticsClient', () => {
       } as Response);
 
       await expect(
-        client.generateSignals('BTC/USDT', '1m', 1000000, 2000000, 'ema_crossover_rsi')
+        client.generateSignals('mock', 'BTC/USDT', '1m', 1000000, 2000000, 'ema_crossover_rsi')
       ).rejects.toThrow('Invalid JSON');
     });
   });

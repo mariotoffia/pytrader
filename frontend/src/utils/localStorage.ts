@@ -45,9 +45,9 @@ export function setStoredSymbol(symbol: string): void {
 }
 
 /** with fallback to default
- * @param defaultInterval - Default interval if none stored (defaults to '1h')
+ * @param defaultInterval - Default interval if none stored (defaults to '1m')
  */
-export function getStoredInterval(defaultInterval: Interval = '1h'): Interval {
+export function getStoredInterval(defaultInterval: Interval = '1m'): Interval {
   const stored = localStorage.getItem(STORAGE_KEYS.SELECTED_INTERVAL);
   const validIntervals: Interval[] = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w'];
   if (stored && validIntervals.includes(stored as Interval)) {

@@ -11,6 +11,7 @@ describe('useCandles', () => {
   it('should initialize with empty candles', () => {
     const { result } = renderHook(() =>
       useCandles({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -42,6 +43,7 @@ describe('useCandles', () => {
 
     const { result } = renderHook(() =>
       useCandles({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -65,6 +67,7 @@ describe('useCandles', () => {
 
     const { result } = renderHook(() =>
       useCandles({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -116,6 +119,7 @@ describe('useCandles', () => {
     const { result, rerender } = renderHook(
       ({ symbol }) =>
         useCandles({
+          provider: 'mock',
           symbol,
           interval: '1m',
           gatewayUrl: 'http://localhost:4000',
@@ -171,6 +175,7 @@ describe('useCandles', () => {
     const { result, rerender } = renderHook(
       ({ interval }) =>
         useCandles({
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval,
           gatewayUrl: 'http://localhost:4000',
@@ -198,6 +203,7 @@ describe('useCandles', () => {
 
     renderHook(() =>
       useCandles({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -211,6 +217,7 @@ describe('useCandles', () => {
 
     const fetchCall = vi.mocked(fetch).mock.calls[0][0] as string;
     expect(fetchCall).toContain('http://localhost:4000/candles');
+    expect(fetchCall).toContain('provider=mock');
     expect(fetchCall).toContain('symbol=BTC%2FUSDT');
     expect(fetchCall).toContain('interval=1m');
     expect(fetchCall).toContain('from=');
@@ -222,6 +229,7 @@ describe('useCandles', () => {
 
     const { result } = renderHook(() =>
       useCandles({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -247,6 +255,7 @@ describe('useCandles', () => {
 
     const { result } = renderHook(() =>
       useCandles({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',

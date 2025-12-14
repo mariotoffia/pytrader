@@ -26,9 +26,18 @@ VITE_WS_URL=ws://localhost:4000/stream
 
 # Frontend Development Port
 VITE_PORT=4003
+
+# Optional: enable verbose client-side debug logging (scopes: ws,http,candles,indicators,signals or "1"/"all")
+# VITE_DEBUG=signals,indicators,ws
 ```
 
 **Important**: Frontend environment variables must be prefixed with `VITE_` to be exposed to the client.
+
+You can also enable debug logging at runtime (without rebuilding) from the browser console:
+
+```js
+localStorage.setItem('pytrader.debug', 'ws,http,candles,indicators,signals'); // or "1"
+```
 
 **Configuration File**: [`frontend/src/config.ts`](../frontend/src/config.ts)
 - Centralizes all environment variable access
@@ -52,6 +61,9 @@ WS_MAX_CONNECTIONS=100
 
 # Log level: debug | info | warn | error
 LOG_LEVEL=info
+
+# Optional: enable verbose request tracing (logs requestId + bodies)
+# TRACE_REQUESTS=1
 ```
 
 **Configuration File**: [`services/gateway/src/config.ts`](../services/gateway/src/config.ts)

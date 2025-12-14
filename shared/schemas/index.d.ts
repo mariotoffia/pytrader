@@ -1169,6 +1169,7 @@ export declare const GetSymbolsResponseSchema: z.ZodObject<{
     }[];
 }>;
 export declare const CalculateIndicatorsRequestSchema: z.ZodEffects<z.ZodObject<{
+    provider: z.ZodEnum<["binance", "coinbase", "mock"]>;
     symbol: z.ZodString;
     interval: z.ZodEnum<["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"]>;
     from: z.ZodNumber;
@@ -1177,24 +1178,28 @@ export declare const CalculateIndicatorsRequestSchema: z.ZodEffects<z.ZodObject<
 }, "strip", z.ZodTypeAny, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     indicators: ("ema_20" | "ema_50" | "ema_200" | "rsi_14" | "macd" | "bollinger_bands" | "volume_sma")[];
 }, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     indicators: ("ema_20" | "ema_50" | "ema_200" | "rsi_14" | "macd" | "bollinger_bands" | "volume_sma")[];
 }>, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     indicators: ("ema_20" | "ema_50" | "ema_200" | "rsi_14" | "macd" | "bollinger_bands" | "volume_sma")[];
 }, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     indicators: ("ema_20" | "ema_50" | "ema_200" | "rsi_14" | "macd" | "bollinger_bands" | "volume_sma")[];
@@ -1217,6 +1222,7 @@ export declare const CalculateIndicatorsResponseSchema: z.ZodObject<{
     }, z.ZodUnion<[z.ZodNumber, z.ZodUndefined]>, "strip">[];
 }>;
 export declare const GenerateSignalsRequestSchema: z.ZodEffects<z.ZodObject<{
+    provider: z.ZodEnum<["binance", "coinbase", "mock"]>;
     symbol: z.ZodString;
     interval: z.ZodEnum<["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"]>;
     from: z.ZodNumber;
@@ -1225,24 +1231,28 @@ export declare const GenerateSignalsRequestSchema: z.ZodEffects<z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     strategyId: string;
 }, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     strategyId: string;
 }>, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     strategyId: string;
 }, {
     symbol: string;
     interval: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1d" | "1w";
+    provider: "binance" | "coinbase" | "mock";
     from: number;
     to: number;
     strategyId: string;

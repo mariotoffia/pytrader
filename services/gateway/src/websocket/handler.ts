@@ -19,9 +19,13 @@ export class WebSocketHandler {
   /**
    * Handle new WebSocket connection
    */
-  handleConnection(socket: WebSocket, _request: FastifyRequest): void {
+  handleConnection(socket: WebSocket, request: FastifyRequest): void {
     this.sessionManager.addClient(socket);
-    this.logger.info('WebSocket client connected');
+    (socket as any).__requestId = request.id;
+    this.logger.info(
+      { requestId: request.id, ip: request.ip, url: request.url },
+      'WebSocket client connected'
+    );
 
     // Handle incoming messages
     socket.on('message', (data: Buffer) => {
@@ -31,12 +35,14 @@ export class WebSocketHandler {
     // Handle disconnection
     socket.on('close', () => {
       this.sessionManager.removeClient(socket);
-      this.logger.info('WebSocket client disconnected');
+      const requestId = (socket as any).__requestId;
+      this.logger.info({ requestId }, 'WebSocket client disconnected');
     });
 
     // Handle errors
     socket.on('error', (error: Error) => {
-      this.logger.error('WebSocket error:', error);
+      const requestId = (socket as any).__requestId;
+      this.logger.error({ requestId, err: error }, 'WebSocket error');
     });
   }
 

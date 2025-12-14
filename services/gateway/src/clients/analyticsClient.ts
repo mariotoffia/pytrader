@@ -6,7 +6,19 @@ import {
   Signal,
   Interval,
   IndicatorName,
+  DataProvider,
 } from '@pytrader/shared/types';
+
+export class UpstreamServiceError extends Error {
+  constructor(
+    message: string,
+    public readonly upstream: { url: string; status: number; statusText: string; body?: string },
+    public readonly requestId?: string
+  ) {
+    super(message);
+    this.name = 'UpstreamServiceError';
+  }
+}
 
 /**
  * HTTP client for Analytics Service
@@ -18,14 +30,17 @@ export class AnalyticsClient {
    * Calculate technical indicators
    */
   async calculateIndicators(
+    provider: DataProvider,
     symbol: string,
     interval: Interval,
     from: number,
     to: number,
-    indicators: IndicatorName[]
+    indicators: IndicatorName[],
+    options?: { requestId?: string }
   ): Promise<IndicatorResult[]> {
     const url = `${this.baseUrl}/internal/indicators`;
     const body: CalculateIndicatorsRequest = {
+      provider,
       symbol,
       interval,
       from,
@@ -35,12 +50,25 @@ export class AnalyticsClient {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.requestId ? { 'X-Request-Id': options.requestId } : {}),
+      },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      throw new Error(`Analytics Service error: ${response.statusText}`);
+      let upstreamBody: string | undefined;
+      try {
+        upstreamBody = await response.text();
+      } catch {
+        // ignore
+      }
+      throw new UpstreamServiceError(
+        `Analytics Service error: ${response.status} ${response.statusText}`,
+        { url, status: response.status, statusText: response.statusText, body: upstreamBody },
+        options?.requestId
+      );
     }
 
     const data = (await response.json()) as CalculateIndicatorsResponse;
@@ -51,15 +79,18 @@ export class AnalyticsClient {
    * Generate trading signals
    */
   async generateSignals(
+    provider: DataProvider,
     symbol: string,
     interval: Interval,
     from: number,
     to: number,
-    strategyId: string
+    strategyId: string,
+    options?: { requestId?: string }
   ): Promise<Signal[]> {
     const url = `${this.baseUrl}/internal/signals`;
     // Convert to snake_case for Python API
     const body = {
+      provider,
       symbol,
       interval,
       from,
@@ -69,12 +100,25 @@ export class AnalyticsClient {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.requestId ? { 'X-Request-Id': options.requestId } : {}),
+      },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      throw new Error(`Analytics Service error: ${response.statusText}`);
+      let upstreamBody: string | undefined;
+      try {
+        upstreamBody = await response.text();
+      } catch {
+        // ignore
+      }
+      throw new UpstreamServiceError(
+        `Analytics Service error: ${response.status} ${response.statusText}`,
+        { url, status: response.status, statusText: response.statusText, body: upstreamBody },
+        options?.requestId
+      );
     }
 
     const data = (await response.json()) as GenerateSignalsResponse;

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Interval } from '../types';
+import { debugLog } from '../utils/debug';
+import { fetchJson, HttpError } from '../utils/http';
 
 export interface IndicatorResult {
   timestamp: number;
@@ -45,24 +47,28 @@ export function useIndicators({ provider, symbol, interval, gatewayUrl, candles 
         const from = candles[0].timestamp;
         const to = candles[candles.length - 1].timestamp;
 
-        const response = await fetch(`${gatewayUrl}/indicators`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            provider,
-            symbol,
-            interval,
-            from,
-            to,
-            indicators: ['ema_20', 'ema_50', 'rsi_14', 'bollinger_bands'],
-          }),
-        });
+        const payload = {
+          provider,
+          symbol,
+          interval,
+          from,
+          to,
+          indicators: ['ema_20', 'ema_50', 'rsi_14', 'bollinger_bands'],
+        };
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch indicators: ${response.statusText}`);
-        }
+        debugLog('indicators', 'fetch', payload);
 
-        const data = await response.json();
+        const { data, requestId } = await fetchJson<{ results: IndicatorResult[] }>(
+          `${gatewayUrl}/indicators`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          },
+          { scope: 'indicators', requestName: 'indicators' }
+        );
+
+        debugLog('indicators', 'fetched', { requestId, results: data.results?.length ?? 0 });
 
         if (cancelled) return;
 
@@ -87,6 +93,14 @@ export function useIndicators({ provider, symbol, interval, gatewayUrl, candles 
         setIndicators(groupedIndicators);
       } catch (err) {
         if (cancelled) return;
+        if (err instanceof HttpError) {
+          debugLog('indicators', 'fetch error', err.details);
+          const message = `Failed to fetch indicators: ${err.details.status ?? ''} ${err.details.statusText ?? ''} (requestId: ${err.details.requestId})`;
+          setError(message);
+          console.error('Error fetching indicators:', err.details);
+          return;
+        }
+
         const message = err instanceof Error ? err.message : 'Failed to fetch indicators';
         setError(message);
         console.error('Error fetching indicators:', err);
@@ -102,7 +116,7 @@ export function useIndicators({ provider, symbol, interval, gatewayUrl, candles 
     return () => {
       cancelled = true;
     };
-  }, [symbol, interval, gatewayUrl, candles.length, candles[0]?.timestamp, candles[candles.length - 1]?.timestamp]);
+  }, [provider, symbol, interval, gatewayUrl, candles.length, candles[0]?.timestamp, candles[candles.length - 1]?.timestamp]);
 
   return {
     indicators,

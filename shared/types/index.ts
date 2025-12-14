@@ -307,6 +307,7 @@ export interface GetSymbolsResponse {
  * POST /internal/indicators request
  */
 export interface CalculateIndicatorsRequest {
+  provider: DataProvider;
   symbol: string;
   interval: Interval;
   from: number;
@@ -325,6 +326,7 @@ export interface CalculateIndicatorsResponse {
  * POST /internal/signals request
  */
 export interface GenerateSignalsRequest {
+  provider: DataProvider;
   symbol: string;
   interval: Interval;
   from: number;

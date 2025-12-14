@@ -11,6 +11,7 @@ describe('useSignals', () => {
   it('should initialize with empty signals', () => {
     const { result } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -43,6 +44,7 @@ describe('useSignals', () => {
 
     const { result } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -67,6 +69,7 @@ describe('useSignals', () => {
 
     const { result } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -91,6 +94,7 @@ describe('useSignals', () => {
 
     renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -108,6 +112,7 @@ describe('useSignals', () => {
 
     expect(requestBody.symbol).toBe('BTC/USDT');
     expect(requestBody.interval).toBe('1m');
+    expect(requestBody.provider).toBe('mock');
     expect(requestBody.strategyId).toBe('ema_crossover_rsi');
     expect(requestBody.from).toBeDefined();
     expect(requestBody.to).toBeDefined();
@@ -128,6 +133,7 @@ describe('useSignals', () => {
 
     renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -168,6 +174,7 @@ describe('useSignals', () => {
 
     renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -194,6 +201,7 @@ describe('useSignals', () => {
 
     const { result } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -263,6 +271,7 @@ describe('useSignals', () => {
 
     const { result } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -312,6 +321,7 @@ describe('useSignals', () => {
 
     const { unmount } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -343,6 +353,7 @@ describe('useSignals', () => {
 
     const { result } = renderHook(() =>
       useSignals({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -370,6 +381,7 @@ describe('useSignals', () => {
     const { rerender } = renderHook(
       ({ symbol }) =>
         useSignals({
+          provider: 'mock',
           symbol,
           interval: '1m',
           gatewayUrl: 'http://localhost:4000',

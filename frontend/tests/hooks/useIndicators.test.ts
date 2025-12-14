@@ -11,6 +11,7 @@ describe('useIndicators', () => {
   it('should initialize with empty indicators', () => {
     const { result } = renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -26,6 +27,7 @@ describe('useIndicators', () => {
   it('should not fetch indicators when candles are empty', () => {
     renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -70,6 +72,7 @@ describe('useIndicators', () => {
 
     const { result } = renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -85,7 +88,10 @@ describe('useIndicators', () => {
       'http://localhost:4000/indicators',
       expect.objectContaining({
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'X-Request-Id': expect.any(String),
+        }),
         body: expect.stringContaining('ema_20'),
       })
     );
@@ -118,6 +124,7 @@ describe('useIndicators', () => {
 
     const { result } = renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -150,6 +157,7 @@ describe('useIndicators', () => {
 
     const { result } = renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -204,6 +212,7 @@ describe('useIndicators', () => {
     const { rerender } = renderHook(
       ({ candles }) =>
         useIndicators({
+          provider: 'mock',
           symbol: 'BTC/USDT',
           interval: '1m',
           gatewayUrl: 'http://localhost:4000',
@@ -242,6 +251,7 @@ describe('useIndicators', () => {
 
     renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
@@ -257,6 +267,7 @@ describe('useIndicators', () => {
     const requestBody = JSON.parse(fetchCall[1]!.body as string);
 
     expect(requestBody).toEqual({
+      provider: 'mock',
       symbol: 'BTC/USDT',
       interval: '1m',
       from: 1000000,
@@ -283,6 +294,7 @@ describe('useIndicators', () => {
 
     const { result } = renderHook(() =>
       useIndicators({
+        provider: 'mock',
         symbol: 'BTC/USDT',
         interval: '1m',
         gatewayUrl: 'http://localhost:4000',
