@@ -234,7 +234,7 @@ make rebuild         # Alias for build-clean
 
 ### Development
 ```bash
-make dev             # Start all TypeScript services (foreground)
+make dev             # Start all services (foreground)
 make dev-analytics   # Start Python analytics service only
 make stop            # Stop all services and kill orphans
 make serve           # Show manual start commands for all services
@@ -292,6 +292,7 @@ npm run build:clean          # Clean + rebuild
 ### Dev Scripts
 ```bash
 npm run dev                  # All services (parallel)
+npm run dev:ts               # TypeScript services only (parallel)
 npm run dev:gateway          # Gateway only
 npm run dev:market-data      # Market-data only
 npm run dev:frontend         # Frontend only

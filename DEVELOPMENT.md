@@ -143,20 +143,17 @@ This ensures fresh installs always have shared types available.
 **Option 1: Foreground Mode (Recommended)**
 
 ```bash
-# Terminal 1: TypeScript services (shared, gateway, market-data, frontend)
+# Single terminal: all services (shared, gateway, market-data, analytics, frontend)
 make dev
-
-# Terminal 2: Python analytics service
-make dev-analytics
 ```
 
 **What happens:**
-- All TypeScript services start in parallel using `concurrently`
+- All services start in parallel using `concurrently`
 - Shared types rebuild automatically in watch mode
 - Services auto-restart on code changes
 - Frontend has hot module replacement (HMR)
 - Analytics service runs with uvicorn auto-reload
-- Press Ctrl+C to stop services in each terminal
+- Press Ctrl+C to stop all services
 
 **Option 2: Manual Service Start (More Control)**
 

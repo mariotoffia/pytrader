@@ -121,8 +121,6 @@ quality: lint format-check typecheck ## Run all code quality checks
 
 dev: ## Start all services in development mode (foreground, parallel)
 	@echo "$(BLUE)Starting development mode...$(NC)"
-	@echo "$(YELLOW)Note: This starts TypeScript services only$(NC)"
-	@echo "$(YELLOW)For analytics, run: make dev-analytics (in separate terminal)$(NC)"
 	@echo "$(YELLOW)Press Ctrl+C to stop all services$(NC)"
 	@echo ""
 	npm run dev
@@ -135,6 +133,9 @@ stop: ## Stop all services and kill any orphan processes
 	@echo "$(BLUE)Stopping all services...$(NC)"
 	@echo "$(YELLOW)→ Stopping docker-compose services...$(NC)"
 	@docker-compose down 2>/dev/null || true
+	@echo "$(YELLOW)→ Stopping Python analytics (uvicorn)...$(NC)"
+	@pkill -f "services/analytics/.venv/bin/uvicorn" 2>/dev/null || true
+	@pkill -f "services/analytics.*uvicorn" 2>/dev/null || true
 	@echo "$(YELLOW)→ Killing processes on ports 4000-4003...$(NC)"
 	@lsof -ti :4000 | xargs kill -9 2>/dev/null || true
 	@lsof -ti :4001 | xargs kill -9 2>/dev/null || true
