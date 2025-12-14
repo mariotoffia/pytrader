@@ -2,6 +2,8 @@
  * Frontend-specific types
  */
 
+export type DataProvider = 'binance' | 'coinbase' | 'mock';
+
 export type Interval = '1m' | '5m' | '15m' | '30m' | '1h' | '4h' | '1d' | '1w';
 
 export interface OHLCVCandle {
@@ -93,4 +95,38 @@ export interface PageCandlesResponse {
   candles: OHLCVCandle[];
   nextCursor: number | null;
   prevCursor: number | null;
+}
+
+// Provider Management Types
+export interface ProviderSubscription {
+  symbol: string;
+  interval: Interval;
+}
+
+export interface ProviderStatus {
+  name: DataProvider;
+  enabled: boolean;
+  connected: boolean;
+  subscriptions: ProviderSubscription[];
+  errorState: string | null;
+}
+
+export interface BackfillRequest {
+  provider: DataProvider;
+  symbol: string;
+  interval: Interval;
+  from?: number;
+  to?: number;
+  hours?: number;
+}
+
+export interface BackfillResponse {
+  success: boolean;
+  provider: DataProvider;
+  symbol: string;
+  interval: Interval;
+  candlesInserted: number;
+  candlesFetched: number;
+  timeRange: { from: number; to: number };
+  duration: number;
 }

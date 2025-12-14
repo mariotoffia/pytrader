@@ -3,6 +3,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { Dashboard } from './pages/Dashboard';
 import { MarketDataMgmt } from './pages/MarketDataMgmt';
 import { MarketDataBrowser } from './pages/MarketDataBrowser';
+import { ConfigManagement } from './pages/ConfigManagement';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/config" element={<ConfigManagement />} />
           <Route path="/market-data" element={<MarketDataMgmt />} />
           <Route path="/market-data/browse" element={<MarketDataBrowser />} />
         </Route>

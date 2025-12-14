@@ -25,6 +25,7 @@ class CalculateIndicatorsRequest(BaseModel):
     """Request to calculate technical indicators"""
     model_config = ConfigDict(populate_by_name=True)
 
+    provider: str
     symbol: str
     interval: Interval
     from_: int = Field(..., alias="from")
@@ -47,6 +48,7 @@ class GenerateSignalsRequest(BaseModel):
     """Request to generate trading signals"""
     model_config = ConfigDict(populate_by_name=True)
 
+    provider: str
     symbol: str
     interval: Interval
     from_: int = Field(..., alias="from")

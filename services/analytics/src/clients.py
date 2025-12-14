@@ -12,10 +12,11 @@ class MarketDataClient:
         self.client = httpx.AsyncClient(timeout=30.0)
 
     async def get_candles(
-        self, symbol: str, interval: Interval, from_ts: int, to_ts: int
+        self, provider: str, symbol: str, interval: Interval, from_ts: int, to_ts: int
     ) -> List[OHLCVCandle]:
         """Fetch historical candles"""
         params = {
+            "provider": provider,
             "symbol": symbol,
             "interval": interval,
             "from": from_ts,

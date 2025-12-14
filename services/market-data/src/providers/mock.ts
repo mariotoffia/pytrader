@@ -174,4 +174,19 @@ export class MockProvider extends DataProvider {
       requestsPerMinute: 6000,
     };
   }
+
+  /**
+   * Get list of supported symbols for mock provider
+   */
+  async getSupportedSymbols(): Promise<string[]> {
+    // Mock provider supports common crypto pairs
+    return ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'ADA/USDT'];
+  }
+
+  /**
+   * Get list of supported intervals for mock provider
+   */
+  getSupportedIntervals(): Interval[] {
+    return ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w'];
+  }
 }

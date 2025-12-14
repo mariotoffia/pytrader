@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Signal, Interval } from '../types';
 
 interface UseSignalsOptions {
+  provider: string;
   symbol: string;
   interval: Interval;
   gatewayUrl: string;
@@ -10,6 +11,7 @@ interface UseSignalsOptions {
 }
 
 export function useSignals({
+  provider,
   symbol,
   interval,
   gatewayUrl,
@@ -33,6 +35,7 @@ export function useSignals({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          provider,
           symbol,
           interval,
           from: oneDayAgo,
@@ -54,7 +57,7 @@ export function useSignals({
     } finally {
       setLoading(false);
     }
-  }, [symbol, interval, gatewayUrl, strategyId]);
+  }, [provider, symbol, interval, gatewayUrl, strategyId]);
 
   // Fetch historical signals on mount and when symbol/interval changes
   useEffect(() => {

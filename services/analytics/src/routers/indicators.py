@@ -15,6 +15,7 @@ async def calculate_indicators_endpoint(request: CalculateIndicatorsRequest):
     try:
         # Fetch candles from market-data service
         candles = await market_data_client.get_candles(
+            provider=request.provider,
             symbol=request.symbol,
             interval=request.interval,
             from_ts=request.from_,

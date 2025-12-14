@@ -60,6 +60,18 @@ export abstract class DataProvider extends EventEmitter {
   abstract getRateLimitMetadata(): RateLimitMetadata;
 
   /**
+   * Get list of supported trading symbols for this provider
+   * Each provider should implement this to return symbols they support
+   */
+  abstract getSupportedSymbols(): Promise<string[]>;
+
+  /**
+   * Get list of supported intervals for this provider
+   * Each provider should implement this to return intervals they support
+   */
+  abstract getSupportedIntervals(): Interval[];
+
+  /**
    * Check if connected
    */
   isConnected(): boolean {

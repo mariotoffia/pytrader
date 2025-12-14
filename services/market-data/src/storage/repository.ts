@@ -8,6 +8,7 @@ import { OHLCVCandle, Interval, CandlePageDirection } from '@pytrader/shared/typ
 export class CandleRepository {
   private insertStmt: Database.Statement;
   private queryByRangeStmt: Database.Statement;
+  private queryByProviderAndRangeStmt: Database.Statement;
   private queryPageForwardStmt: Database.Statement;
   private queryPageBackwardStmt: Database.Statement;
   private queryLatestStmt: Database.Statement;
@@ -26,6 +27,13 @@ export class CandleRepository {
       SELECT symbol, interval, timestamp, open, high, low, close, volume, provider
       FROM candles
       WHERE symbol = ? AND interval = ? AND timestamp >= ? AND timestamp <= ?
+      ORDER BY timestamp ASC
+    `);
+
+    this.queryByProviderAndRangeStmt = db.prepare(`
+      SELECT symbol, interval, timestamp, open, high, low, close, volume, provider
+      FROM candles
+      WHERE provider = ? AND symbol = ? AND interval = ? AND timestamp >= ? AND timestamp <= ?
       ORDER BY timestamp ASC
     `);
 
@@ -135,6 +143,30 @@ export class CandleRepository {
     to: number
   ): OHLCVCandle[] {
     const rows = this.queryByRangeStmt.all(symbol, interval, from, to) as any[];
+    return rows.map((row) => ({
+      symbol: row.symbol,
+      interval: row.interval,
+      timestamp: row.timestamp,
+      open: row.open,
+      high: row.high,
+      low: row.low,
+      close: row.close,
+      volume: row.volume,
+      provider: row.provider,
+    }));
+  }
+
+  /**
+   * Query candles by provider and time range
+   */
+  getCandlesByProviderAndRange(
+    provider: string,
+    symbol: string,
+    interval: Interval,
+    from: number,
+    to: number
+  ): OHLCVCandle[] {
+    const rows = this.queryByProviderAndRangeStmt.all(provider, symbol, interval, from, to) as any[];
     return rows.map((row) => ({
       symbol: row.symbol,
       interval: row.interval,

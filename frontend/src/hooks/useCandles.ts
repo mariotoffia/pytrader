@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import { OHLCVCandle, Interval, CandleUpdateMessage } from '../types';
+import { OHLCVCandle, Interval, CandleUpdateMessage, DataProvider } from '../types';
 import { useWebSocket } from './useWebSocket';
 
 interface UseCandlesOptions {
+  provider: DataProvider;
   symbol: string;
   interval: Interval;
   gatewayUrl: string;
   wsUrl: string;
 }
 
-export function useCandles({ symbol, interval, gatewayUrl, wsUrl }: UseCandlesOptions) {
+export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: UseCandlesOptions) {
   const [candles, setCandles] = useState<OHLCVCandle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +58,7 @@ export function useCandles({ symbol, interval, gatewayUrl, wsUrl }: UseCandlesOp
       const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
       const params = new URLSearchParams({
+        provider,
         symbol,
         interval,
         from: oneDayAgo.toString(),
@@ -77,7 +79,7 @@ export function useCandles({ symbol, interval, gatewayUrl, wsUrl }: UseCandlesOp
     } finally {
       setLoading(false);
     }
-  }, [symbol, interval, gatewayUrl]);
+  }, [provider, symbol, interval, gatewayUrl]);
 
   // Fetch historical data on mount and when symbol/interval changes
   useEffect(() => {

@@ -271,4 +271,38 @@ export class BinanceProvider extends DataProvider {
             weightPerMinute: 1200,
         };
     }
+
+    /**
+     * Get list of supported symbols for Binance
+     * Fetches from Binance API exchange info endpoint
+     */
+    async getSupportedSymbols(): Promise<string[]> {
+        try {
+            await this.throttle();
+            const response = await fetch(`${this.apiUrl}/api/v3/exchangeInfo`);
+            
+            if (!response.ok) {
+                throw new Error(`Binance API error: ${response.statusText}`);
+            }
+
+            const data = await response.json() as { symbols: Array<{ symbol: string; status: string; baseAsset: string; quoteAsset: string }> };
+            
+            // Filter for pairs that are trading
+            return data.symbols
+                .filter(s => s.status === 'TRADING')
+                .map(s => `${s.baseAsset}/${s.quoteAsset}`)
+                .sort();
+        } catch (error) {
+            // Fallback to common pairs if API call fails
+            console.error('Error fetching Binance symbols:', error);
+            return ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'ADA/USDT'];
+        }
+    }
+
+    /**
+     * Get list of supported intervals for Binance
+     */
+    getSupportedIntervals(): Interval[] {
+        return ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w'];
+    }
 }

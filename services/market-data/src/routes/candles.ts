@@ -23,13 +23,14 @@ export async function registerCandleRoutes(
   repository: CandleRepository
 ): Promise<void> {
   /**
-   * GET /internal/candles - Get historical candles
+   * GET /internal/candles - Get historical candles for a specific provider
    */
   fastify.get('/internal/candles', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // Parse and validate query parameters
       const query = request.query as Record<string, string>;
       const params: GetCandlesRequest = {
+        provider: query.provider as DataProvider,
         symbol: query.symbol,
         interval: query.interval as Interval,
         from: parseInt(query.from, 10),
@@ -44,10 +45,10 @@ export async function registerCandleRoutes(
         });
       }
 
-      const { symbol, interval, from, to } = validationResult.data;
+      const { provider, symbol, interval, from, to } = validationResult.data;
 
-      // Query candles from repository
-      const candles = repository.getCandlesByRange(symbol, interval, from, to);
+      // Query candles from repository for specific provider
+      const candles = repository.getCandlesByProviderAndRange(provider, symbol, interval, from, to);
 
       // Validate response
       const response = { candles };

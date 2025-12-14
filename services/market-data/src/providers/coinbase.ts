@@ -291,4 +291,47 @@ export class CoinbaseProvider extends DataProvider {
             requestsPerSecond: 10,
         };
     }
+
+    /**
+     * Get list of supported symbols for Coinbase
+     * Fetches from Coinbase API products endpoint
+     */
+    async getSupportedSymbols(): Promise<string[]> {
+        try {
+            await this.throttle();
+            const response = await fetch(`${this.apiUrl}/products`);
+            
+            if (!response.ok) {
+                throw new Error(`Coinbase API error: ${response.statusText}`);
+            }
+
+            const data = await response.json() as Array<{ 
+                id: string; 
+                base_currency: string; 
+                quote_currency: string; 
+                status: string;
+                trading_disabled: boolean;
+            }>;
+            
+            // Filter for pairs that are trading
+            return data
+                .filter(p => 
+                    p.status === 'online' && 
+                    !p.trading_disabled
+                )
+                .map(p => `${p.base_currency}/${p.quote_currency}`)
+                .sort();
+        } catch (error) {
+            // Fallback to common pairs if API call fails
+            console.error('Error fetching Coinbase symbols:', error);
+            return ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'];
+        }
+    }
+
+    /**
+     * Get list of supported intervals for Coinbase
+     */
+    getSupportedIntervals(): Interval[] {
+        return ['1m', '5m', '15m', '1h', '4h', '1d'];
+    }
 }

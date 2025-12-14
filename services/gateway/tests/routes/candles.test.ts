@@ -38,12 +38,13 @@ describe('Candle Routes', () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/candles?symbol=BTC/USDT&interval=1m&from=1000000&to=2000000',
+        url: '/candles?provider=mock&symbol=BTC/USDT&interval=1m&from=1000000&to=2000000',
       });
 
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual({ candles: mockCandles });
       expect(mockMarketDataClient.getCandles).toHaveBeenCalledWith(
+        'mock',
         'BTC/USDT',
         '1m',
         1000000,
@@ -68,7 +69,7 @@ describe('Candle Routes', () => {
 
       const response = await app.inject({
         method: 'GET',
-        url: '/candles?symbol=BTC/USDT&interval=1m&from=1000000&to=2000000',
+        url: '/candles?provider=mock&symbol=BTC/USDT&interval=1m&from=1000000&to=2000000',
       });
 
       expect(response.statusCode).toBe(500);
@@ -82,7 +83,7 @@ describe('Candle Routes', () => {
 
         const response = await app.inject({
           method: 'GET',
-          url: `/candles?symbol=ETH/USDT&interval=${interval}&from=1000000&to=2000000`,
+          url: `/candles?provider=mock&symbol=ETH/USDT&interval=${interval}&from=1000000&to=2000000`,
         });
 
         expect(response.statusCode).toBe(200);

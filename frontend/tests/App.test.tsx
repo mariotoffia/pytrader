@@ -13,11 +13,34 @@ describe('App', () => {
     vi.clearAllMocks();
     vi.mocked(fetch).mockClear();
 
-    // Mock successful candles fetch
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ candles: [] }),
-    } as Response);
+    // Mock fetch to handle different endpoints
+    vi.mocked(fetch).mockImplementation((url: string | Request | URL) => {
+      const urlString = url.toString();
+
+      if (urlString.includes('/market-data/providers')) {
+        // Mock provider status response
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            providers: [
+              { name: 'mock', enabled: true, connected: true, subscriptions: [], errorMessage: null }
+            ]
+          }),
+        } as Response);
+      } else if (urlString.includes('/market-data/providers/mock/tickers')) {
+        // Mock provider tickers response
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ provider: 'mock', tickers: ['BTC/USDT', 'ETH/USDT'] }),
+        } as Response);
+      } else {
+        // Default to candles response
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ candles: [] }),
+        } as Response);
+      }
+    });
   });
 
   it('should render the app with all components', async () => {
@@ -27,14 +50,14 @@ describe('App', () => {
     expect(screen.getByText('PyTrader')).toBeInTheDocument();
 
     // Check for selectors
-    expect(screen.getByLabelText('Symbol:')).toBeInTheDocument();
+    expect(screen.getByLabelText('Symbol')).toBeInTheDocument();
     expect(screen.getByLabelText('Interval:')).toBeInTheDocument();
   });
 
   it('should show initial symbol and interval', () => {
     render(<App />);
 
-    const symbolSelect = screen.getByLabelText('Symbol:') as HTMLSelectElement;
+    const symbolSelect = screen.getByLabelText('Symbol') as HTMLSelectElement;
     const intervalSelect = screen.getByLabelText('Interval:') as HTMLSelectElement;
 
     expect(symbolSelect.value).toBe('BTC/USDT');
@@ -45,10 +68,10 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const symbolSelect = screen.getByLabelText('Symbol:');
+    const symbolSelect = screen.getByLabelText('Symbol');
     await user.selectOptions(symbolSelect, 'ETH/USDT');
 
-    const updatedSelect = screen.getByLabelText('Symbol:') as HTMLSelectElement;
+    const updatedSelect = screen.getByLabelText('Symbol') as HTMLSelectElement;
     expect(updatedSelect.value).toBe('ETH/USDT');
   });
 
@@ -168,9 +191,15 @@ describe('App', () => {
       expect(fetch).toHaveBeenCalled();
     });
 
-    const fetchCall = vi.mocked(fetch).mock.calls[0][0] as string;
-    expect(fetchCall).toContain('/candles');
-    expect(fetchCall).toContain('symbol=BTC%2FUSDT');
-    expect(fetchCall).toContain('interval=1m');
+    // Find the candles fetch call (not the first one which is providers status)
+    const candlesFetchCall = vi.mocked(fetch).mock.calls.find(
+      (call) => call[0].toString().includes('/candles?provider')
+    );
+    expect(candlesFetchCall).toBeDefined();
+    const fetchUrl = candlesFetchCall![0] as string;
+    expect(fetchUrl).toContain('/candles');
+    expect(fetchUrl).toContain('provider=mock');
+    expect(fetchUrl).toMatch(/symbol=[A-Z]+%2F[A-Z]+/); // symbol in format XXX/XXX
+    expect(fetchUrl).toMatch(/interval=\d+[mhd]/); // interval like 1m, 5m, 1h, etc.
   });
 });

@@ -41,6 +41,9 @@ export function MainLayout() {
         <Link to="/" style={linkStyle('/')}>
           Dashboard
         </Link>
+        <Link to="/config" style={linkStyle('/config')}>
+          Configuration
+        </Link>
         <Link to="/market-data" style={linkStyle('/market-data')}>
           Market Data
         </Link>

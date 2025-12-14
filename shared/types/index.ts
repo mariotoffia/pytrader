@@ -218,6 +218,19 @@ export interface ErrorMessage {
 }
 
 /**
+ * Server → Client: Provider state change notification
+ */
+export interface ProviderStateChangeMessage {
+  type: 'provider_state_change';
+  payload: {
+    provider: DataProvider;
+    status: 'connected' | 'disconnected' | 'error';
+    activeSubscriptions: ProviderSubscription[];
+    errorMessage?: string;
+  };
+}
+
+/**
  * All possible client → server messages
  */
 export type ClientMessage =
@@ -232,7 +245,8 @@ export type ClientMessage =
 export type ServerMessage =
   | CandleUpdateMessage
   | SignalUpdateMessage
-  | ErrorMessage;
+  | ErrorMessage
+  | ProviderStateChangeMessage;
 
 // ============================================================================
 // API Request/Response Types
@@ -242,6 +256,7 @@ export type ServerMessage =
  * GET /candles query parameters
  */
 export interface GetCandlesRequest {
+  provider: DataProvider;
   symbol: string;
   interval: Interval;
   from: number;  // Unix timestamp in milliseconds
@@ -342,6 +357,70 @@ export interface MarketDataConfig {
   sqlitePath: string;
   symbols: string[];  // e.g., ["BTC/USDT", "ETH/USDT"]
   logLevel: 'debug' | 'info' | 'warn' | 'error';
+}
+
+/**
+ * Provider-specific configuration
+ */
+export interface ProviderConfig {
+  enabled: boolean;
+  symbols: string[];
+  intervals: Interval[];
+  backfillOnStartup: boolean;
+}
+
+/**
+ * Multi-provider configuration
+ */
+export interface MultiProviderConfig {
+  version: string;
+  defaultBackfillHours: number;
+  providers: Record<DataProvider, ProviderConfig>;
+}
+
+/**
+ * Provider subscription information
+ */
+export interface ProviderSubscription {
+  symbol: string;
+  interval: Interval;
+}
+
+/**
+ * Provider status information
+ */
+export interface ProviderStatus {
+  name: DataProvider;
+  enabled: boolean;
+  connected: boolean;
+  subscriptions: ProviderSubscription[];
+  errorState: string | null;
+}
+
+/**
+ * Backfill request
+ */
+export interface BackfillRequest {
+  provider: DataProvider;
+  symbol: string;
+  interval: Interval;
+  from?: number;  // Unix timestamp in milliseconds
+  to?: number;    // Unix timestamp in milliseconds
+  hours?: number; // Alternative to from/to
+}
+
+/**
+ * Backfill response
+ */
+export interface BackfillResponse {
+  success: boolean;
+  provider: DataProvider;
+  symbol: string;
+  interval: Interval;
+  candlesInserted: number;
+  candlesFetched: number;
+  timeRange: { from: number; to: number };
+  duration: number; // milliseconds
 }
 
 /**

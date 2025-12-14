@@ -149,10 +149,26 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   UnsubscribeSignalsMessageSchema,
 ]);
 
+export const ProviderSubscriptionSchema = z.object({
+  symbol: z.string().min(1),
+  interval: IntervalSchema,
+});
+
+export const ProviderStateChangeMessageSchema = z.object({
+  type: z.literal('provider_state_change'),
+  payload: z.object({
+    provider: DataProviderSchema,
+    status: z.enum(['connected', 'disconnected', 'error']),
+    activeSubscriptions: z.array(ProviderSubscriptionSchema),
+    errorMessage: z.string().optional(),
+  }),
+});
+
 export const ServerMessageSchema = z.discriminatedUnion('type', [
   CandleUpdateMessageSchema,
   SignalUpdateMessageSchema,
   ErrorMessageSchema,
+  ProviderStateChangeMessageSchema,
 ]);
 
 // ============================================================================
@@ -160,6 +176,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
 // ============================================================================
 
 export const GetCandlesRequestSchema = z.object({
+  provider: DataProviderSchema,
   symbol: z.string().min(1),
   interval: IntervalSchema,
   from: z.number().int().positive(),
@@ -234,6 +251,69 @@ export const MarketDataConfigSchema = z.object({
   sqlitePath: z.string().min(1),
   symbols: z.array(z.string().min(1)).min(1),
   logLevel: LogLevelSchema,
+});
+
+export const ProviderConfigSchema = z.object({
+  enabled: z.boolean(),
+  symbols: z.array(z.string().min(1)).min(0),
+  intervals: z.array(IntervalSchema).min(0),
+  backfillOnStartup: z.boolean(),
+});
+
+export const MultiProviderConfigSchema = z.object({
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  defaultBackfillHours: z.number().int().min(1).max(8760),
+  providers: z.object({
+    binance: ProviderConfigSchema,
+    coinbase: ProviderConfigSchema,
+    mock: ProviderConfigSchema,
+  }),
+});
+
+export const ProviderStatusSchema = z.object({
+  name: DataProviderSchema,
+  enabled: z.boolean(),
+  connected: z.boolean(),
+  subscriptions: z.array(ProviderSubscriptionSchema),
+  errorState: z.string().nullable(),
+});
+
+export const BackfillRequestSchema = z.object({
+  provider: DataProviderSchema,
+  symbol: z.string().min(1),
+  interval: IntervalSchema,
+  from: z.number().int().positive().optional(),
+  to: z.number().int().positive().optional(),
+  hours: z.number().int().min(1).max(8760).optional(),
+}).refine(
+  (data) => {
+    const hasTimeRange = data.from !== undefined && data.to !== undefined;
+    const hasHours = data.hours !== undefined;
+    return hasTimeRange !== hasHours; // XOR: exactly one must be provided
+  },
+  { message: 'Must provide either (from AND to) OR hours, but not both' }
+).refine(
+  (data) => {
+    if (data.from !== undefined && data.to !== undefined) {
+      return data.to > data.from;
+    }
+    return true;
+  },
+  { message: 'to must be greater than from' }
+);
+
+export const BackfillResponseSchema = z.object({
+  success: z.boolean(),
+  provider: DataProviderSchema,
+  symbol: z.string().min(1),
+  interval: IntervalSchema,
+  candlesInserted: z.number().int().nonnegative(),
+  candlesFetched: z.number().int().nonnegative(),
+  timeRange: z.object({
+    from: z.number().int().positive(),
+    to: z.number().int().positive(),
+  }),
+  duration: z.number().nonnegative(), // milliseconds
 });
 
 export const GatewayConfigSchema = z.object({

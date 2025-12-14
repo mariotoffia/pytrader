@@ -53,6 +53,16 @@ build: ## Build all TypeScript projects
 	@echo ""
 	@echo "$(GREEN)✓ All projects built successfully!$(NC)"
 
+clean-dist: ## Clean only dist folders (faster than full clean)
+	@echo "$(BLUE)Cleaning dist folders...$(NC)"
+	@rm -rf services/gateway/dist
+	@rm -rf services/market-data/dist
+	@rm -rf frontend/dist
+	@rm -rf shared/dist
+	@echo "$(GREEN)✓ Dist folders cleaned!$(NC)"
+
+rebuild: clean-dist build ## Clean dist folders and rebuild (recommended after shared changes)
+
 test: ## Run all tests (TypeScript + Python)
 	@echo "$(BLUE)Running tests...$(NC)"
 	@echo "$(YELLOW)→ Running market-data tests...$(NC)"

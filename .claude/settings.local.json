@@ -35,7 +35,8 @@
       "Bash(bash:*)",
       "Bash(make build:*)",
       "Bash(tee:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(tree:*)"
     ]
   }
 }

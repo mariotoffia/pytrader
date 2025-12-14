@@ -16,13 +16,14 @@ export interface IndicatorData {
 }
 
 interface UseIndicatorsOptions {
+  provider: string;
   symbol: string;
   interval: Interval;
   gatewayUrl: string;
   candles: any[]; // Trigger refetch when candles change
 }
 
-export function useIndicators({ symbol, interval, gatewayUrl, candles }: UseIndicatorsOptions) {
+export function useIndicators({ provider, symbol, interval, gatewayUrl, candles }: UseIndicatorsOptions) {
   const [indicators, setIndicators] = useState<IndicatorData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export function useIndicators({ symbol, interval, gatewayUrl, candles }: UseIndi
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            provider,
             symbol,
             interval,
             from,

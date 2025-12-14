@@ -8,7 +8,7 @@ describe('SymbolSelector', () => {
     const mockOnChange = vi.fn();
     render(<SymbolSelector value="BTC/USDT" onChange={mockOnChange} />);
 
-    const select = screen.getByLabelText('Symbol:') as HTMLSelectElement;
+    const select = screen.getByLabelText('Symbol') as HTMLSelectElement;
     expect(select.value).toBe('BTC/USDT');
   });
 
@@ -30,7 +30,7 @@ describe('SymbolSelector', () => {
 
     render(<SymbolSelector value="BTC/USDT" onChange={mockOnChange} />);
 
-    const select = screen.getByLabelText('Symbol:');
+    const select = screen.getByLabelText('Symbol');
     await user.selectOptions(select, 'ETH/USDT');
 
     expect(mockOnChange).toHaveBeenCalledWith('ETH/USDT');
@@ -41,7 +41,7 @@ describe('SymbolSelector', () => {
     const mockOnChange = vi.fn();
     const { rerender } = render(<SymbolSelector value="BTC/USDT" onChange={mockOnChange} />);
 
-    const select = screen.getByLabelText('Symbol:') as HTMLSelectElement;
+    const select = screen.getByLabelText('Symbol') as HTMLSelectElement;
     expect(select.value).toBe('BTC/USDT');
 
     rerender(<SymbolSelector value="ETH/USDT" onChange={mockOnChange} />);
@@ -52,7 +52,7 @@ describe('SymbolSelector', () => {
     const mockOnChange = vi.fn();
     render(<SymbolSelector value="BTC/USDT" onChange={mockOnChange} />);
 
-    const select = screen.getByLabelText('Symbol:');
+    const select = screen.getByLabelText('Symbol');
     expect(select).toHaveAttribute('id', 'symbol-select');
   });
 });

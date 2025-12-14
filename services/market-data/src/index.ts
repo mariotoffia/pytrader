@@ -1,135 +1,149 @@
 // Load environment variables from .env file
 import 'dotenv/config';
 
+import * as path from 'path';
+import * as url from 'url';
 import Fastify from 'fastify';
 import { CandleDatabase } from './storage/database.js';
 import { CandleRepository } from './storage/repository.js';
-import { DataProvider } from './providers/base.js';
-import { MockProvider } from './providers/mock.js';
-import { BinanceProvider } from './providers/binance.js';
-import { CoinbaseProvider } from './providers/coinbase.js';
 import { normalizeCandle } from './normalizer.js';
 import { registerCandleRoutes } from './routes/candles.js';
 import { registerHealthRoutes } from './routes/health.js';
-import { loadConfig, getBackfillHours } from './config.js';
-import { RawCandle } from '@pytrader/shared/types';
+import { registerConfigRoutes } from './routes/config.js';
+import { registerProviderRoutes } from './routes/providers.js';
+import { registerBackfillRoutes } from './routes/backfill.js';
+import { loadConfig } from './config.js';
+import { ConfigManager } from './config/configManager.js';
+import { ProviderManager } from './providers/providerManager.js';
+import { RawCandle, DataProvider as DataProviderType } from '@pytrader/shared/types';
+
+// Get the directory name for ES modules
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Market Data Service
- * Ingests market data from providers, normalizes it, and stores in SQLite
+ * Ingests market data from multiple providers, normalizes it, and stores in SQLite
  */
 class MarketDataService {
   private fastify: ReturnType<typeof Fastify>;
   private database: CandleDatabase;
   private repository: CandleRepository;
-  private provider: DataProvider;
-  private config: ReturnType<typeof loadConfig>;
+  private providerManager: ProviderManager;
+  private configManager: ConfigManager;
+  private serviceConfig: ReturnType<typeof loadConfig>;
 
   constructor() {
-    this.config = loadConfig();
+    this.serviceConfig = loadConfig();
 
     // Initialize Fastify
     this.fastify = Fastify({
       logger: {
-        level: this.config.logLevel,
+        level: this.serviceConfig.logLevel,
       },
     });
 
     // Initialize database and repository
-    this.database = new CandleDatabase(this.config.sqlitePath);
+    this.database = new CandleDatabase(this.serviceConfig.sqlitePath);
     this.repository = new CandleRepository(this.database.getDb());
 
-    // Initialize provider based on configuration
-    this.provider = this.createProvider();
+    // Initialize configuration manager
+    const configPath = path.join(__dirname, '../data/config.json');
+    this.configManager = new ConfigManager(configPath, this.fastify.log);
+
+    // Initialize provider manager
+    this.providerManager = new ProviderManager(this.fastify.log);
 
     // Set up provider event handlers
     this.setupProviderHandlers();
   }
 
   /**
-   * Create provider based on configuration
+   * Set up provider event handlers for all providers
    */
-  private createProvider(): DataProvider {
-    switch (this.config.provider) {
-      case 'mock':
-        return new MockProvider();
-      case 'binance':
-        return new BinanceProvider();
-      case 'coinbase':
-        return new CoinbaseProvider();
-      default:
-        throw new Error(`Unknown provider: ${this.config.provider}`);
+  private setupProviderHandlers(): void {
+    // Set up candle handlers for all providers
+    for (const [providerName, provider] of this.providerManager.getAllProviders()) {
+      // Handle incoming candles
+      provider.on('candle', (rawCandle: RawCandle) => {
+        try {
+          const candle = normalizeCandle(rawCandle);
+          this.repository.insertCandle(candle);
+          this.fastify.log.debug(
+            `[${providerName}] Stored candle: ${candle.symbol} ${candle.interval} @ ${candle.timestamp}`
+          );
+        } catch (error) {
+          this.fastify.log.error(`[${providerName}] Error storing candle:`, error);
+        }
+      });
+
+      // Handle provider errors
+      provider.on('error', (error: Error) => {
+        this.fastify.log.error(`[${providerName}] Provider error:`, error);
+      });
     }
   }
 
   /**
-   * Set up provider event handlers
-   */
-  private setupProviderHandlers(): void {
-    // Handle incoming candles
-    this.provider.on('candle', (rawCandle: RawCandle) => {
-      try {
-        const candle = normalizeCandle(rawCandle);
-        this.repository.insertCandle(candle);
-        this.fastify.log.debug(
-          `Stored candle: ${candle.symbol} ${candle.interval} @ ${candle.timestamp}`
-        );
-      } catch (error) {
-        this.fastify.log.error('Error storing candle:', error);
-      }
-    });
-
-    // Handle provider errors
-    this.provider.on('error', (error: Error) => {
-      this.fastify.log.error('Provider error:', error);
-    });
-  }
-
-  /**
-   * Backfill historical data
+   * Backfill historical data for all enabled providers
    */
   private async backfillHistoricalData(): Promise<void> {
-    const backfillHours = getBackfillHours();
+    const multiConfig = this.configManager.getConfig();
+    const backfillHours = multiConfig.defaultBackfillHours;
+
+    this.fastify.log.info(`Backfilling ${backfillHours} hours of historical data...`);
+
     const now = Date.now();
     const from = now - backfillHours * 60 * 60 * 1000;
     const to = now;
 
-    this.fastify.log.info(`Backfilling ${backfillHours} hours of historical data...`);
+    for (const [providerName, providerConfig] of Object.entries(multiConfig.providers)) {
+      // Skip if provider not enabled or backfill not requested
+      if (!providerConfig.enabled || !providerConfig.backfillOnStartup) {
+        continue;
+      }
 
-    for (const symbol of this.config.symbols) {
-      try {
-        // Fetch historical candles
-        const rawCandles = await this.provider.getHistoricalCandles(symbol, '1m', from, to);
+      const provider = this.providerManager.getProvider(providerName as DataProviderType);
+      if (!provider) {
+        this.fastify.log.warn(`Provider ${providerName} not found, skipping backfill`);
+        continue;
+      }
 
-        // Normalize and store
-        const candles = rawCandles.map(normalizeCandle);
-        const inserted = this.repository.insertCandles(candles);
+      // Skip if provider not connected
+      if (!provider.isConnected()) {
+        this.fastify.log.warn(`Provider ${providerName} not connected, skipping backfill`);
+        continue;
+      }
 
-        this.fastify.log.info(
-          `Backfilled ${symbol}: ${inserted} new candles (${rawCandles.length} total fetched)`
-        );
-      } catch (error) {
-        this.fastify.log.error(`Error backfilling ${symbol}:`, error);
+      // Backfill for each symbol/interval combination
+      for (const symbol of providerConfig.symbols) {
+        for (const interval of providerConfig.intervals) {
+          try {
+            this.fastify.log.debug(
+              `[${providerName}] Backfilling ${symbol} ${interval}...`
+            );
+
+            // Fetch historical candles
+            const rawCandles = await provider.getHistoricalCandles(symbol, interval, from, to);
+
+            // Normalize and store
+            const candles = rawCandles.map(normalizeCandle);
+            const inserted = this.repository.insertCandles(candles);
+
+            this.fastify.log.info(
+              `[${providerName}] Backfilled ${symbol} ${interval}: ${inserted} new candles (${rawCandles.length} total fetched)`
+            );
+          } catch (error) {
+            this.fastify.log.error(
+              `[${providerName}] Error backfilling ${symbol} ${interval}:`,
+              error
+            );
+          }
+        }
       }
     }
 
     this.fastify.log.info('Backfill complete');
-  }
-
-  /**
-   * Subscribe to real-time data for configured symbols
-   */
-  private async subscribeToSymbols(): Promise<void> {
-    this.fastify.log.info('Subscribing to real-time data...');
-
-    for (const symbol of this.config.symbols) {
-      try {
-        await this.provider.subscribeCandles(symbol, '1m');
-        this.fastify.log.info(`Subscribed to ${symbol} 1m candles`);
-      } catch (error) {
-        this.fastify.log.error(`Error subscribing to ${symbol}:`, error);
-      }
-    }
   }
 
   /**
@@ -138,6 +152,9 @@ class MarketDataService {
   private async registerRoutes(): Promise<void> {
     await registerHealthRoutes(this.fastify);
     await registerCandleRoutes(this.fastify, this.repository);
+    await registerConfigRoutes(this.fastify, this.configManager, this.providerManager);
+    await registerProviderRoutes(this.fastify, this.configManager, this.providerManager);
+    await registerBackfillRoutes(this.fastify, this.providerManager, this.repository);
   }
 
   /**
@@ -148,24 +165,22 @@ class MarketDataService {
       // Register routes
       await this.registerRoutes();
 
-      // Connect to data provider
-      this.fastify.log.info(`Connecting to ${this.config.provider} provider...`);
-      await this.provider.connect();
-      this.fastify.log.info('Provider connected');
+      // Apply provider configuration (connects providers and subscribes to symbols/intervals)
+      this.fastify.log.info('Applying provider configuration...');
+      const multiConfig = this.configManager.getConfig();
+      await this.providerManager.applyConfiguration(multiConfig.providers);
+      this.fastify.log.info('Provider configuration applied');
 
       // Backfill historical data
       await this.backfillHistoricalData();
 
-      // Subscribe to real-time updates
-      await this.subscribeToSymbols();
-
       // Start HTTP server
       await this.fastify.listen({
-        port: this.config.port,
+        port: this.serviceConfig.port,
         host: '0.0.0.0',
       });
 
-      this.fastify.log.info(`Market Data Service listening on port ${this.config.port}`);
+      this.fastify.log.info(`Market Data Service listening on port ${this.serviceConfig.port}`);
     } catch (error) {
       this.fastify.log.error({ err: error }, 'Failed to start service');
       console.error('Failed to start service:', error);
@@ -179,8 +194,8 @@ class MarketDataService {
   async stop(): Promise<void> {
     this.fastify.log.info('Shutting down...');
 
-    // Disconnect provider
-    await this.provider.disconnect();
+    // Disconnect all providers
+    await this.providerManager.disconnectAll();
 
     // Close database
     this.database.close();

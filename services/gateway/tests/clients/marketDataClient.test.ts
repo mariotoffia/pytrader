@@ -31,11 +31,14 @@ describe('MarketDataClient', () => {
         json: async () => ({ candles: mockCandles }),
       } as Response);
 
-      const candles = await client.getCandles('BTC/USDT', '1m', 1000000, 2000000);
+      const candles = await client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000);
 
       expect(candles).toEqual(mockCandles);
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('/internal/candles?')
+      );
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('provider=mock')
       );
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('symbol=BTC%2FUSDT')
@@ -58,7 +61,7 @@ describe('MarketDataClient', () => {
       } as Response);
 
       await expect(
-        client.getCandles('BTC/USDT', '1m', 1000000, 2000000)
+        client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)
       ).rejects.toThrow('Market Data Service error: Internal Server Error');
     });
 
@@ -68,7 +71,7 @@ describe('MarketDataClient', () => {
         json: async () => ({ candles: [] }),
       } as Response);
 
-      const candles = await client.getCandles('BTC/USDT', '1m', 1000000, 2000000);
+      const candles = await client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000);
 
       expect(candles).toEqual([]);
     });
@@ -79,10 +82,10 @@ describe('MarketDataClient', () => {
         json: async () => ({ candles: [] }),
       } as Response);
 
-      await client.getCandles('ETH/USDT', '5m', 5000000, 6000000);
+      await client.getCandles('binance', 'ETH/USDT', '5m', 5000000, 6000000);
 
       expect(fetch).toHaveBeenCalledWith(
-        `${baseUrl}/internal/candles?symbol=ETH%2FUSDT&interval=5m&from=5000000&to=6000000`
+        `${baseUrl}/internal/candles?provider=binance&symbol=ETH%2FUSDT&interval=5m&from=5000000&to=6000000`
       );
     });
   });
@@ -178,7 +181,7 @@ describe('MarketDataClient', () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
       await expect(
-        client.getCandles('BTC/USDT', '1m', 1000000, 2000000)
+        client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)
       ).rejects.toThrow('Network error');
     });
 
@@ -191,7 +194,7 @@ describe('MarketDataClient', () => {
       } as Response);
 
       await expect(
-        client.getCandles('BTC/USDT', '1m', 1000000, 2000000)
+        client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)
       ).rejects.toThrow('Invalid JSON');
     });
 

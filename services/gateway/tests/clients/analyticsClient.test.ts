@@ -155,7 +155,7 @@ describe('AnalyticsClient', () => {
             interval: '1m',
             from: 1000000,
             to: 2000000,
-            strategyId: 'ema_crossover_rsi',
+            strategy_id: 'ema_crossover_rsi',
           }),
         })
       );
@@ -205,7 +205,7 @@ describe('AnalyticsClient', () => {
             ?.body as string
         );
 
-        expect(callBody.strategyId).toBe(strategyId);
+        expect(callBody.strategy_id).toBe(strategyId);
       }
     });
 

@@ -1,16 +1,31 @@
 import { useEffect, useRef } from 'react';
 import { createChart, IChartApi, ISeriesApi, CandlestickData, SeriesMarker, Time } from 'lightweight-charts';
-import { OHLCVCandle, Signal } from '../types';
+import { OHLCVCandle, Signal, DataProvider, Interval } from '../types';
 import { IndicatorData } from '../hooks/useIndicators';
+import { useChartBackfill } from '../hooks/useChartBackfill';
+import config from '../config';
 
 interface ChartProps {
   candles: OHLCVCandle[];
   symbol: string;
+  provider: DataProvider;
+  interval: Interval;
   indicators?: IndicatorData;
   signals?: Signal[];
+  onBackfillComplete?: () => void;
 }
 
-export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
+const GATEWAY_URL = config.gatewayUrl;
+
+export function Chart({
+  candles,
+  symbol,
+  provider,
+  interval,
+  indicators,
+  signals,
+  onBackfillComplete,
+}: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -22,6 +37,16 @@ export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
   const bbMiddleSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const bbLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  // Backfill management
+  const { handleVisibleRangeChange, backfilling, backfillMessage } = useChartBackfill({
+    gatewayUrl: GATEWAY_URL,
+    provider,
+    symbol,
+    interval,
+    earliestCandleTimestamp: candles.length > 0 ? candles[0].timestamp : null,
+    onBackfillComplete,
+  });
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -149,8 +174,8 @@ export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
       rsiChartRef.current = rsiChart;
       rsiSeriesRef.current = rsiSeries;
 
-      // Synchronize time scales
-      chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+      // Synchronize time scales and detect missing data for backfill
+      chart.timeScale().subscribeVisibleTimeRangeChange(async () => {
         const timeRange = chart.timeScale().getVisibleRange();
         if (timeRange && timeRange.from != null && timeRange.to != null && rsiChart) {
           try {
@@ -158,6 +183,10 @@ export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
           } catch (error) {
             // Ignore errors when range is invalid
           }
+
+          // Trigger backfill if user scrolled to missing data
+          const visibleFrom = (timeRange.from as number) * 1000; // Convert to ms
+          await handleVisibleRangeChange(visibleFrom);
         }
       });
 
@@ -348,6 +377,26 @@ export function Chart({ candles, symbol, indicators, signals }: ChartProps) {
         >
           {symbol}
         </div>
+
+        {/* Backfill status overlay */}
+        {(backfilling || backfillMessage) && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 50,
+              left: 10,
+              zIndex: 1000,
+              background: backfilling ? 'rgba(38, 166, 154, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              color: '#fff',
+              fontSize: '12px',
+            }}
+          >
+            {backfilling ? 'Loading historical data...' : backfillMessage}
+          </div>
+        )}
+
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
       </div>
 

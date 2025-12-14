@@ -19,8 +19,15 @@ export function useWebSocket({
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const reconnectAttemptsRef = useRef(0);
+  // Track if we're intentionally closing (e.g., during cleanup)
+  const isIntentionalCloseRef = useRef(false);
+  // Track if connection was ever established (to distinguish StrictMode remount)
+  const hadConnectionRef = useRef(false);
 
   const connect = useCallback(() => {
+    // Reset intentional close flag when connecting
+    isIntentionalCloseRef.current = false;
+
     // Prevent multiple simultaneous connections
     if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
       return;
@@ -40,6 +47,7 @@ export function useWebSocket({
       ws.onopen = () => {
         console.log('WebSocket connected');
         setIsConnected(true);
+        hadConnectionRef.current = true;
         reconnectAttemptsRef.current = 0;
         setReconnectAttempts(0);
       };
@@ -53,26 +61,31 @@ export function useWebSocket({
         }
       };
 
-      ws.onerror = (error) => {
-        // Suppress "WebSocket is closed before the connection is established" warnings
-        // This is normal during reconnection attempts when the server isn't ready
-        if (wsRef.current && wsRef.current.readyState !== WebSocket.OPEN) {
-          // Only log if we had an established connection before
-          if (reconnectAttemptsRef.current === 0) {
-            console.warn('WebSocket connection failed, will retry...');
-          }
-        } else {
-          console.error('WebSocket error:', error);
+      ws.onerror = () => {
+        // Suppress error logging for intentional closes (StrictMode cleanup)
+        // and for connection failures during reconnection attempts
+        if (isIntentionalCloseRef.current) {
+          return;
+        }
+        // Only log errors for established connections or first connection attempt
+        if (hadConnectionRef.current && reconnectAttemptsRef.current === 0) {
+          console.warn('WebSocket connection error, will retry...');
         }
       };
 
       ws.onclose = (event) => {
-        // Only log disconnection if it was a clean close or we had an established connection
-        if (event.wasClean || reconnectAttemptsRef.current === 0) {
-          console.log('WebSocket disconnected');
-        }
         setIsConnected(false);
         wsRef.current = null;
+
+        // Don't attempt to reconnect if this was an intentional close (cleanup)
+        if (isIntentionalCloseRef.current) {
+          return;
+        }
+
+        // Only log disconnection if it was a clean close or we had an established connection
+        if (event.wasClean || hadConnectionRef.current) {
+          console.log('WebSocket disconnected');
+        }
 
         // Attempt to reconnect
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
@@ -96,6 +109,9 @@ export function useWebSocket({
   }, [url, onMessage, reconnectInterval, maxReconnectAttempts]);
 
   const disconnect = useCallback(() => {
+    // Mark this as an intentional close to suppress warnings
+    isIntentionalCloseRef.current = true;
+
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
