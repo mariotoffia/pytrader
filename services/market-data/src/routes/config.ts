@@ -53,14 +53,27 @@ export async function registerConfigRoutes(
       // Update configuration (saves to file)
       await configManager.updateConfig(newConfig);
 
-      // Apply configuration to providers
-      fastify.log.info('Applying updated configuration to providers...');
-      await providerManager.applyConfiguration(newConfig.providers);
-      fastify.log.info('Configuration applied successfully');
+      // Apply configuration to providers (best-effort)
+      let applied = true;
+      let applyError: string | undefined;
+      try {
+        fastify.log.info('Applying updated configuration to providers...');
+        await providerManager.applyConfiguration(newConfig.providers);
+        fastify.log.info('Configuration applied successfully');
+      } catch (error) {
+        applied = false;
+        applyError = error instanceof Error ? error.message : 'Unknown error';
+        fastify.log.error(
+          { error },
+          'Configuration saved, but failed to apply to providers (will require manual retry)'
+        );
+      }
 
       return reply.status(200).send({
         success: true,
         config: newConfig,
+        applied,
+        applyError,
       });
     } catch (error) {
       fastify.log.error({ error }, 'Error updating configuration');

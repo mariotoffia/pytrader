@@ -37,7 +37,7 @@ export async function registerProviderRoutes(
 
   /**
    * GET /internal/providers/:provider/tickers
-   * Get configured tickers for a specific provider from config.json
+   * Get supported tickers for a specific provider
    */
   fastify.get<{ Params: { provider: string } }>(
     '/internal/providers/:provider/tickers',
@@ -53,10 +53,15 @@ export async function registerProviderRoutes(
       }
 
       try {
-        // Return only configured symbols from config.json
-        const config = configManager.getConfig();
-        const providerConfig = config.providers[provider as DataProvider];
-        const symbols = providerConfig?.symbols || [];
+        const providerInstance = providerManager.getProvider(provider as DataProvider);
+        if (!providerInstance) {
+          return reply.status(404).send({
+            error: 'Provider not found',
+            message: `Provider '${provider}' is not available`,
+          });
+        }
+
+        const symbols = await providerInstance.getSupportedSymbols();
 
         return reply.status(200).send({
           provider,
@@ -74,7 +79,7 @@ export async function registerProviderRoutes(
 
   /**
    * GET /internal/providers/:provider/intervals
-   * Get configured intervals for a specific provider from config.json
+   * Get supported intervals for a specific provider
    */
   fastify.get<{ Params: { provider: string } }>(
     '/internal/providers/:provider/intervals',
@@ -90,10 +95,15 @@ export async function registerProviderRoutes(
       }
 
       try {
-        // Return only configured intervals from config.json
-        const config = configManager.getConfig();
-        const providerConfig = config.providers[provider as DataProvider];
-        const intervals = providerConfig?.intervals || [];
+        const providerInstance = providerManager.getProvider(provider as DataProvider);
+        if (!providerInstance) {
+          return reply.status(404).send({
+            error: 'Provider not found',
+            message: `Provider '${provider}' is not available`,
+          });
+        }
+
+        const intervals = providerInstance.getSupportedIntervals();
 
         return reply.status(200).send({
           provider,

@@ -54,13 +54,13 @@ describe('SignalPoller', () => {
   describe('Lifecycle', () => {
     it('should start polling', () => {
       // Add subscription so polling actually happens
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
       expect(mockAnalyticsClient.generateSignals).toHaveBeenCalled();
     });
 
     it('should stop polling', async () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
       await new Promise((resolve) => setTimeout(resolve, 10)); // Let initial poll happen
@@ -78,7 +78,7 @@ describe('SignalPoller', () => {
 
     it('should not start multiple times', () => {
       // Add subscription so polling actually happens
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
       poller.start(); // Should not throw
 
@@ -92,30 +92,30 @@ describe('SignalPoller', () => {
 
   describe('Subscription Management', () => {
     it('should subscribe client to signals', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
       expect(poller.getSubscriptionCount()).toBe(1);
       expect(poller.getSubscriberCount()).toBe(1);
     });
 
     it('should handle multiple subscriptions from same client', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket1, 'ETH/USDT', '5m', 'macd_signal');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'ETH/USDT', '5m', 'macd_signal');
 
       expect(poller.getSubscriptionCount()).toBe(2);
       expect(poller.getSubscriberCount()).toBe(2);
     });
 
     it('should handle multiple clients subscribing to same signal', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket2, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket2, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
       expect(poller.getSubscriptionCount()).toBe(1);
       expect(poller.getSubscriberCount()).toBe(2);
     });
 
     it('should unsubscribe client from signals', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.unsubscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
       expect(poller.getSubscriptionCount()).toBe(0);
@@ -123,8 +123,8 @@ describe('SignalPoller', () => {
     });
 
     it('should only remove specific client when unsubscribing', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket2, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket2, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
       poller.unsubscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
@@ -133,8 +133,8 @@ describe('SignalPoller', () => {
     });
 
     it('should remove client from all subscriptions', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket1, 'ETH/USDT', '5m', 'macd_signal');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'ETH/USDT', '5m', 'macd_signal');
 
       poller.removeClient(socket1);
 
@@ -143,8 +143,8 @@ describe('SignalPoller', () => {
     });
 
     it('should get client subscriptions', () => {
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket1, 'ETH/USDT', '5m', 'macd_signal');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'ETH/USDT', '5m', 'macd_signal');
 
       const subscriptions = poller.getClientSubscriptions(socket1);
 
@@ -183,7 +183,7 @@ describe('SignalPoller', () => {
 
       vi.mocked(mockAnalyticsClient.generateSignals).mockResolvedValue(mockSignals);
 
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
       // Wait for the poll to complete
@@ -210,8 +210,8 @@ describe('SignalPoller', () => {
 
       vi.mocked(mockAnalyticsClient.generateSignals).mockResolvedValue(mockSignals);
 
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket2, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket2, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
       await vi.runOnlyPendingTimersAsync();
@@ -235,7 +235,7 @@ describe('SignalPoller', () => {
       vi.mocked(mockAnalyticsClient.generateSignals).mockResolvedValue(mockSignals);
 
       socket1.readyState = socket1.CLOSED;
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
       await vi.runOnlyPendingTimersAsync();
@@ -267,7 +267,7 @@ describe('SignalPoller', () => {
         new Error('Analytics service unavailable')
       );
 
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
       // Should not throw
@@ -279,8 +279,8 @@ describe('SignalPoller', () => {
         .mockRejectedValueOnce(new Error('Error'))
         .mockResolvedValue([]);
 
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
-      poller.subscribe(socket2, 'ETH/USDT', '5m', 'macd_signal');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket2, 'mock', 'ETH/USDT', '5m', 'macd_signal');
       poller.start();
 
       // Wait for both subscription polls to complete
@@ -290,6 +290,7 @@ describe('SignalPoller', () => {
 
       // pollSignals() should poll both subscriptions even if one fails
       expect(mockAnalyticsClient.generateSignals).toHaveBeenCalledWith(
+        'mock',
         'BTC/USDT',
         '1m',
         expect.any(Number),
@@ -297,6 +298,7 @@ describe('SignalPoller', () => {
         'ema_crossover_rsi'
       );
       expect(mockAnalyticsClient.generateSignals).toHaveBeenCalledWith(
+        'mock',
         'ETH/USDT',
         '5m',
         expect.any(Number),
@@ -311,11 +313,12 @@ describe('SignalPoller', () => {
       const now = Date.now();
       vi.setSystemTime(now);
 
-      poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
+      poller.subscribe(socket1, 'mock', 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
       // The subscription should have lastCheckTimestamp set to now - lookback (2 seconds)
       expect(mockAnalyticsClient.generateSignals).toHaveBeenCalledWith(
+        'mock',
         'BTC/USDT',
         '1m',
         expect.any(Number), // from (should be around now - 2000ms)

@@ -138,6 +138,7 @@ describe('WebSocketHandler', () => {
       );
       expect(mockSignalPoller.subscribe).toHaveBeenCalledWith(
         socket,
+        'mock',
         'BTC/USDT',
         '1m',
         'ema_crossover_rsi'
