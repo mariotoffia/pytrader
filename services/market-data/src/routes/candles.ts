@@ -89,7 +89,14 @@ export async function registerCandleRoutes(
       }
 
       const { provider, symbol, interval, cursor, direction, limit } = validationResult.data;
-      const candles = repository.getCandlesPage(provider, symbol, interval, cursor, direction, limit);
+      const candles = repository.getCandlesPage(
+        provider,
+        symbol,
+        interval,
+        cursor,
+        direction,
+        limit
+      );
 
       const nextCursor = candles.length > 0 ? candles[candles.length - 1].timestamp + 1 : null;
       const prevCursor = candles.length > 0 ? candles[0].timestamp - 1 : null;
@@ -153,15 +160,18 @@ export async function registerCandleRoutes(
   /**
    * GET /internal/candles/stats/detailed - Get detailed statistics breakdown
    */
-  fastify.get('/internal/candles/stats/detailed', async (_request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const stats = repository.getDetailedStats();
-      return reply.send({ stats });
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Internal server error' });
+  fastify.get(
+    '/internal/candles/stats/detailed',
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const stats = repository.getDetailedStats();
+        return reply.send({ stats });
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
     }
-  });
+  );
 
   /**
    * DELETE /internal/candles - Delete candles with filters

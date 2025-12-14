@@ -25,7 +25,13 @@ interface UseIndicatorsOptions {
   candles: any[]; // Trigger refetch when candles change
 }
 
-export function useIndicators({ provider, symbol, interval, gatewayUrl, candles }: UseIndicatorsOptions) {
+export function useIndicators({
+  provider,
+  symbol,
+  interval,
+  gatewayUrl,
+  candles,
+}: UseIndicatorsOptions) {
   const [indicators, setIndicators] = useState<IndicatorData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +85,7 @@ export function useIndicators({ provider, symbol, interval, gatewayUrl, candles 
           // Each result has timestamp and indicator values
           // Group them by indicator name
           data.results.forEach((result: IndicatorResult) => {
-            Object.keys(result).forEach(key => {
+            Object.keys(result).forEach((key) => {
               if (key !== 'timestamp' && result[key] !== undefined) {
                 if (!groupedIndicators[key]) {
                   groupedIndicators[key] = [];
@@ -116,7 +122,15 @@ export function useIndicators({ provider, symbol, interval, gatewayUrl, candles 
     return () => {
       cancelled = true;
     };
-  }, [provider, symbol, interval, gatewayUrl, candles.length, candles[0]?.timestamp, candles[candles.length - 1]?.timestamp]);
+  }, [
+    provider,
+    symbol,
+    interval,
+    gatewayUrl,
+    candles.length,
+    candles[0]?.timestamp,
+    candles[candles.length - 1]?.timestamp,
+  ]);
 
   return {
     indicators,

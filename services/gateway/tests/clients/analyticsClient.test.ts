@@ -29,14 +29,11 @@ describe('AnalyticsClient', () => {
         json: async () => ({ results: mockResults }),
       } as Response);
 
-      const results = await client.calculateIndicators(
-        'mock',
-        'BTC/USDT',
-        '1m',
-        1000000,
-        2000000,
-        ['ema_20', 'ema_50', 'rsi_14']
-      );
+      const results = await client.calculateIndicators('mock', 'BTC/USDT', '1m', 1000000, 2000000, [
+        'ema_20',
+        'ema_50',
+        'rsi_14',
+      ]);
 
       expect(results).toEqual(mockResults);
       expect(fetch).toHaveBeenCalledWith(
@@ -74,14 +71,9 @@ describe('AnalyticsClient', () => {
         json: async () => ({ results: [] }),
       } as Response);
 
-      const results = await client.calculateIndicators(
-        'mock',
-        'BTC/USDT',
-        '1m',
-        1000000,
-        2000000,
-        ['ema_20']
-      );
+      const results = await client.calculateIndicators('mock', 'BTC/USDT', '1m', 1000000, 2000000, [
+        'ema_20',
+      ]);
 
       expect(results).toEqual([]);
     });
@@ -209,8 +201,7 @@ describe('AnalyticsClient', () => {
         await client.generateSignals('mock', 'ETH/USDT', '5m', 5000000, 6000000, strategyId);
 
         const callBody = JSON.parse(
-          vi.mocked(fetch).mock.calls[vi.mocked(fetch).mock.calls.length - 1][1]
-            ?.body as string
+          vi.mocked(fetch).mock.calls[vi.mocked(fetch).mock.calls.length - 1][1]?.body as string
         );
 
         expect(callBody.strategy_id).toBe(strategyId);

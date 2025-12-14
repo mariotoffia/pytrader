@@ -23,7 +23,14 @@ export async function registerSignalRoutes(
       const body = request.body as GenerateSignalsRequest;
 
       // Validate required fields
-      if (!body.provider || !body.symbol || !body.interval || !body.from || !body.to || !body.strategyId) {
+      if (
+        !body.provider ||
+        !body.symbol ||
+        !body.interval ||
+        !body.from ||
+        !body.to ||
+        !body.strategyId
+      ) {
         return reply.status(400).send({
           error: 'Invalid request body',
           details: 'Missing required fields: provider, symbol, interval, from, to, strategyId',

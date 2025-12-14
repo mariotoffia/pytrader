@@ -109,6 +109,7 @@ export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: Us
         unsubscribe(symbol, interval);
       };
     }
+    return undefined;
   }, [isConnected, symbol, interval, subscribe, unsubscribe]);
 
   return {

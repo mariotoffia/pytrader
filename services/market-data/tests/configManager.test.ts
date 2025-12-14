@@ -209,7 +209,12 @@ describe('ConfigManager', () => {
         providers: {
           binance: { enabled: false, symbols: [], intervals: [], backfillOnStartup: false },
           coinbase: { enabled: false, symbols: [], intervals: [], backfillOnStartup: false },
-          mock: { enabled: true, symbols: ['BTC/USDT'], intervals: ['1m'], backfillOnStartup: true },
+          mock: {
+            enabled: true,
+            symbols: ['BTC/USDT'],
+            intervals: ['1m'],
+            backfillOnStartup: true,
+          },
         },
       };
 
@@ -229,7 +234,12 @@ describe('ConfigManager', () => {
         version: '1.0.0',
         defaultBackfillHours: 100,
         providers: {
-          binance: { enabled: true, symbols: ['SOL/USDT'], intervals: ['1m'], backfillOnStartup: true },
+          binance: {
+            enabled: true,
+            symbols: ['SOL/USDT'],
+            intervals: ['1m'],
+            backfillOnStartup: true,
+          },
           coinbase: { enabled: false, symbols: [], intervals: [], backfillOnStartup: false },
           mock: { enabled: false, symbols: [], intervals: [], backfillOnStartup: false },
         },
@@ -286,7 +296,12 @@ describe('ConfigManager', () => {
         version: '1.0.0',
         defaultBackfillHours: 24,
         providers: {
-          binance: { enabled: true, symbols: ['BTC/USDT'], intervals: ['invalid'], backfillOnStartup: false },
+          binance: {
+            enabled: true,
+            symbols: ['BTC/USDT'],
+            intervals: ['invalid'],
+            backfillOnStartup: false,
+          },
           coinbase: { enabled: false, symbols: [], intervals: [], backfillOnStartup: false },
           mock: { enabled: false, symbols: [], intervals: [], backfillOnStartup: false },
         },

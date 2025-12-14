@@ -11,7 +11,10 @@ export function SymbolSelector({ value, onChange, symbols }: SymbolSelectorProps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      <label htmlFor="symbol-select" style={{ color: '#787b86', fontSize: '11px', textTransform: 'uppercase' }}>
+      <label
+        htmlFor="symbol-select"
+        style={{ color: '#787b86', fontSize: '11px', textTransform: 'uppercase' }}
+      >
         Symbol
       </label>
       <select

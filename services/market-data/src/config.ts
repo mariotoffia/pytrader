@@ -25,8 +25,8 @@ export function loadConfig(): ServiceConfig {
   if (process.env.PROVIDER || process.env.SYMBOLS || process.env.BACKFILL_HOURS) {
     console.warn(
       '[DEPRECATION] PROVIDER, SYMBOLS, BACKFILL_HOURS env vars are deprecated. ' +
-      'Configuration is now managed via data/config.json. ' +
-      'These environment variables will be ignored.'
+        'Configuration is now managed via data/config.json. ' +
+        'These environment variables will be ignored.'
     );
   }
 

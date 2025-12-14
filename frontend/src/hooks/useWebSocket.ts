@@ -56,7 +56,11 @@ export function useWebSocket({
       const ws = new WebSocket(url);
 
       ws.onopen = () => {
-        debugLog('ws', 'connected', { label: debugLabel, connectionId: connectionIdRef.current, url });
+        debugLog('ws', 'connected', {
+          label: debugLabel,
+          connectionId: connectionIdRef.current,
+          url,
+        });
         setIsConnected(true);
         hadConnectionRef.current = true;
         reconnectAttemptsRef.current = 0;

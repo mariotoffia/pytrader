@@ -31,9 +31,9 @@ export function MultiSelect({
       return options;
     }
     const query = searchQuery.toLowerCase();
-    return options.filter(option => 
-      option.label.toLowerCase().includes(query) || 
-      option.value.toLowerCase().includes(query)
+    return options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(query) || option.value.toLowerCase().includes(query)
     );
   }, [options, searchQuery]);
 
@@ -86,7 +86,11 @@ export function MultiSelect({
         <button
           type="button"
           onClick={handleClearAll}
-          disabled={disabled || filteredOptions.length === 0 || !filteredOptions.some(opt => selected.includes(opt.value))}
+          disabled={
+            disabled ||
+            filteredOptions.length === 0 ||
+            !filteredOptions.some((opt) => selected.includes(opt.value))
+          }
           className="btn-link"
         >
           Clear All

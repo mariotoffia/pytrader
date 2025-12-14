@@ -1,5 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, SeriesMarker, Time } from 'lightweight-charts';
+import {
+  createChart,
+  IChartApi,
+  ISeriesApi,
+  CandlestickData,
+  SeriesMarker,
+  Time,
+} from 'lightweight-charts';
 import { OHLCVCandle, Signal, DataProvider, Interval } from '../types';
 import { IndicatorData } from '../hooks/useIndicators';
 import { useChartBackfill } from '../hooks/useChartBackfill';
@@ -251,8 +258,8 @@ export function Chart({
     if (!ema20SeriesRef.current || !indicators?.ema_20) return;
 
     const ema20Data = indicators.ema_20
-      .filter(item => item.ema_20 !== undefined)
-      .map(item => ({
+      .filter((item) => item.ema_20 !== undefined)
+      .map((item) => ({
         time: Math.floor(item.timestamp / 1000) as Time,
         value: item.ema_20 as number,
       }));
@@ -265,8 +272,8 @@ export function Chart({
     if (!ema50SeriesRef.current || !indicators?.ema_50) return;
 
     const ema50Data = indicators.ema_50
-      .filter(item => item.ema_50 !== undefined)
-      .map(item => ({
+      .filter((item) => item.ema_50 !== undefined)
+      .map((item) => ({
         time: Math.floor(item.timestamp / 1000) as Time,
         value: item.ema_50 as number,
       }));
@@ -279,8 +286,8 @@ export function Chart({
     if (!bbUpperSeriesRef.current || !indicators?.bb_upper) return;
 
     const bbUpperData = indicators.bb_upper
-      .filter(item => item.bb_upper !== undefined)
-      .map(item => ({
+      .filter((item) => item.bb_upper !== undefined)
+      .map((item) => ({
         time: Math.floor(item.timestamp / 1000) as Time,
         value: item.bb_upper as number,
       }));
@@ -293,8 +300,8 @@ export function Chart({
     if (!bbMiddleSeriesRef.current || !indicators?.bb_middle) return;
 
     const bbMiddleData = indicators.bb_middle
-      .filter(item => item.bb_middle !== undefined)
-      .map(item => ({
+      .filter((item) => item.bb_middle !== undefined)
+      .map((item) => ({
         time: Math.floor(item.timestamp / 1000) as Time,
         value: item.bb_middle as number,
       }));
@@ -307,8 +314,8 @@ export function Chart({
     if (!bbLowerSeriesRef.current || !indicators?.bb_lower) return;
 
     const bbLowerData = indicators.bb_lower
-      .filter(item => item.bb_lower !== undefined)
-      .map(item => ({
+      .filter((item) => item.bb_lower !== undefined)
+      .map((item) => ({
         time: Math.floor(item.timestamp / 1000) as Time,
         value: item.bb_lower as number,
       }));
@@ -321,8 +328,8 @@ export function Chart({
     if (!rsiSeriesRef.current || !indicators?.rsi_14) return;
 
     const rsiData = indicators.rsi_14
-      .filter(item => item.rsi_14 !== undefined)
-      .map(item => ({
+      .filter((item) => item.rsi_14 !== undefined)
+      .map((item) => ({
         time: Math.floor(item.timestamp / 1000) as Time,
         value: item.rsi_14 as number,
       }));
@@ -335,18 +342,16 @@ export function Chart({
     if (!candleSeriesRef.current || !signals || signals.length === 0) return;
 
     // Create a map of candle timestamps for validation
-    const candleTimestamps = new Set(
-      candles.map(c => Math.floor(c.timestamp / 1000))
-    );
+    const candleTimestamps = new Set(candles.map((c) => Math.floor(c.timestamp / 1000)));
 
     const markers: SeriesMarker<Time>[] = signals
-      .filter(signal => signal.action !== 'hold')
-      .filter(signal => {
+      .filter((signal) => signal.action !== 'hold')
+      .filter((signal) => {
         // Only include signals that have corresponding candles in the visible range
         const signalTime = Math.floor(signal.timestamp / 1000);
         return candleTimestamps.has(signalTime);
       })
-      .map(signal => ({
+      .map((signal) => ({
         time: Math.floor(signal.timestamp / 1000) as Time,
         position: signal.action === 'buy' ? 'belowBar' : 'aboveBar',
         color: signal.action === 'buy' ? '#26a69a' : '#ef5350',
@@ -401,7 +406,14 @@ export function Chart({
       </div>
 
       {/* RSI chart */}
-      <div style={{ position: 'relative', width: '100%', height: '30%', borderTop: '1px solid #2b2b43' }}>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '30%',
+          borderTop: '1px solid #2b2b43',
+        }}
+      >
         <div
           style={{
             position: 'absolute',

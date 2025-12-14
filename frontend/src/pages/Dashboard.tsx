@@ -45,7 +45,9 @@ export function Dashboard() {
   useEffect(() => {
     if (providerSymbols && providerSymbols.length > 0 && !providerSymbols.includes(symbol)) {
       // Current symbol not supported by new provider, switch to first available
-      console.log(`[Dashboard] Symbol ${symbol} not supported by ${provider}, switching to ${providerSymbols[0]}`);
+      console.log(
+        `[Dashboard] Symbol ${symbol} not supported by ${provider}, switching to ${providerSymbols[0]}`
+      );
       setSymbol(providerSymbols[0]);
     }
   }, [provider, providerSymbols, symbol]);
@@ -72,7 +74,12 @@ export function Dashboard() {
   });
 
   // Use the shared WebSocket for candles
-  const { candles, loading, error, refetch: refetchCandles } = useCandles({
+  const {
+    candles,
+    loading,
+    error,
+    refetch: refetchCandles,
+  } = useCandles({
     provider,
     symbol,
     interval,
@@ -120,11 +127,15 @@ export function Dashboard() {
         const backfillKey = `${provider}-${symbol}-${interval}`;
         if (hasTriggeredInitialBackfill.current !== backfillKey) {
           hasTriggeredInitialBackfill.current = backfillKey as any;
-          console.log(`[Dashboard] No candles found for ${provider}/${symbol}/${interval}, triggering backfill...`);
+          console.log(
+            `[Dashboard] No candles found for ${provider}/${symbol}/${interval}, triggering backfill...`
+          );
 
           const result = await triggerBackfillByHours(provider, symbol, interval, 24);
           if (result && result.success) {
-            console.log(`[Dashboard] Backfill completed: ${result.candlesInserted} candles inserted`);
+            console.log(
+              `[Dashboard] Backfill completed: ${result.candlesInserted} candles inserted`
+            );
             // Refresh candles after backfill
             setTimeout(() => refetchCandles(), 500);
           }
@@ -133,7 +144,18 @@ export function Dashboard() {
     };
 
     triggerInitialBackfill();
-  }, [loading, candles.length, error, provider, symbol, interval, isProviderAvailable, backfilling, triggerBackfillByHours, refetchCandles]);
+  }, [
+    loading,
+    candles.length,
+    error,
+    provider,
+    symbol,
+    interval,
+    isProviderAvailable,
+    backfilling,
+    triggerBackfillByHours,
+    refetchCandles,
+  ]);
 
   return (
     <div

@@ -39,7 +39,9 @@ export function useProviderSymbols({
         setError(null);
 
         // Fetch only configured symbols (not all available from exchange)
-        const response = await fetch(`${gatewayUrl}/market-data/providers/${provider}/tickers?configuredOnly=true`);
+        const response = await fetch(
+          `${gatewayUrl}/market-data/providers/${provider}/tickers?configuredOnly=true`
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch symbols: ${response.statusText}`);

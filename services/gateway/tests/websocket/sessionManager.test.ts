@@ -139,9 +139,9 @@ describe('SessionManager', () => {
       sessionManager.subscribeSignals(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
       expect(sessionManager.getClientSignalSubscriptions(socket1).size).toBe(1);
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(1);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        1
+      );
     });
 
     it('should handle multiple signal subscriptions from same client', () => {
@@ -156,9 +156,9 @@ describe('SessionManager', () => {
       sessionManager.subscribeSignals(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
       sessionManager.subscribeSignals(socket2, 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(2);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        2
+      );
     });
 
     it('should unsubscribe client from signals', () => {
@@ -166,9 +166,9 @@ describe('SessionManager', () => {
       sessionManager.unsubscribeSignals(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
       expect(sessionManager.getClientSignalSubscriptions(socket1).size).toBe(0);
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(0);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        0
+      );
     });
 
     it('should only remove specific client when unsubscribing from signals', () => {
@@ -177,9 +177,9 @@ describe('SessionManager', () => {
 
       sessionManager.unsubscribeSignals(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
 
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(1);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        1
+      );
       expect(
         sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').has(socket2)
       ).toBe(true);
@@ -190,27 +190,23 @@ describe('SessionManager', () => {
 
       sessionManager.removeClient(socket1);
 
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(0);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        0
+      );
     });
 
     it('should handle different strategies for same symbol/interval', () => {
       sessionManager.subscribeSignals(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
       sessionManager.subscribeSignals(socket2, 'BTC/USDT', '1m', 'macd_signal');
 
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(1);
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'macd_signal').size
-      ).toBe(1);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        1
+      );
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'macd_signal').size).toBe(1);
     });
 
     it('should return empty set for non-existent signal subscriptions', () => {
-      expect(
-        sessionManager.getSignalSubscribers('UNKNOWN', '1m', 'unknown_strategy').size
-      ).toBe(0);
+      expect(sessionManager.getSignalSubscribers('UNKNOWN', '1m', 'unknown_strategy').size).toBe(0);
     });
   });
 
@@ -238,9 +234,9 @@ describe('SessionManager', () => {
       expect(sessionManager.getSubscriptionCount()).toBe(0);
       expect(sessionManager.getConnectionCount()).toBe(0);
       expect(sessionManager.getSubscribers('BTC/USDT', '1m').size).toBe(0);
-      expect(
-        sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size
-      ).toBe(0);
+      expect(sessionManager.getSignalSubscribers('BTC/USDT', '1m', 'ema_crossover_rsi').size).toBe(
+        0
+      );
     });
   });
 
@@ -254,9 +250,7 @@ describe('SessionManager', () => {
     it('should handle unsubscribing from non-existent subscription gracefully', () => {
       sessionManager.addClient(socket1);
 
-      expect(() =>
-        sessionManager.unsubscribeCandles(socket1, 'BTC/USDT', '1m')
-      ).not.toThrow();
+      expect(() => sessionManager.unsubscribeCandles(socket1, 'BTC/USDT', '1m')).not.toThrow();
     });
 
     it('should handle getting subscriptions for non-existent client', () => {

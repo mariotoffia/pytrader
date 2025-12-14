@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Market Data Service
+  market-data:
+    build:
+      context: .
+      dockerfile: services/market-data/Dockerfile
+    ports:
+      - "4001:4001"
+    environment:
+      - PORT=4001
+      - PROVIDER=mock
+      - SQLITE_PATH=/data/market-data.db
+      - SYMBOLS=BTC/USDT,ETH/USDT
+      - LOG_LEVEL=info
+    volumes:
+      - ./data:/data
+      - ./services/market-data:/app/services/market-data
+      - ./shared:/app/shared
+      - /app/services/market-data/node_modules
+      - /app/shared/node_modules
+    networks:
+      - pytrader
+    restart: unless-stopped
+
+  # Gateway Service
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - MARKET_DATA_URL=http://market-data:4001
+      - ANALYTICS_URL=http://analytics:4002
+      - WS_MAX_CONNECTIONS=100
+      - LOG_LEVEL=info
+    depends_on:
+      - market-data
+      - analytics
+    volumes:
+      - ./services/gateway:/app/services/gateway
+      - ./shared:/app/shared
+      - /app/services/gateway/node_modules
+      - /app/shared/node_modules
+    networks:
+      - pytrader
+    restart: unless-stopped
+
+  # Analytics Service (Python)
+  analytics:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile
+    ports:
+      - "4002:4002"
+    environment:
+      - PORT=4002
+      - MARKET_DATA_URL=http://market-data:4001
+      - LOG_LEVEL=INFO
+    depends_on:
+      - market-data
+    volumes:
+      - ./services/analytics:/app/services/analytics
+    networks:
+      - pytrader
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "4003:4003"
+    environment:
+      - VITE_GATEWAY_URL=http://localhost:4000
+      - VITE_WS_URL=ws://localhost:4000/stream
+      - VITE_PORT=4003
+    depends_on:
+      - gateway
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    networks:
+      - pytrader
+    restart: unless-stopped
+
+networks:
+  pytrader:
+    driver: bridge
+
+volumes:
+  data:

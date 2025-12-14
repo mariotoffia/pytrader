@@ -86,9 +86,7 @@ export class ProviderManager extends EventEmitter {
    * Apply configuration to all providers
    * Connects/disconnects providers and updates subscriptions based on config
    */
-  async applyConfiguration(
-    configs: Record<DataProviderType, ProviderConfig>
-  ): Promise<void> {
+  async applyConfiguration(configs: Record<DataProviderType, ProviderConfig>): Promise<void> {
     this.logger.info('Applying configuration to providers');
 
     const promises: Promise<void>[] = [];
@@ -121,9 +119,7 @@ export class ProviderManager extends EventEmitter {
   /**
    * Get status for all providers
    */
-  getProviderStatuses(
-    configs: Record<DataProviderType, ProviderConfig>
-  ): ProviderStatus[] {
+  getProviderStatuses(configs: Record<DataProviderType, ProviderConfig>): ProviderStatus[] {
     const statuses: ProviderStatus[] = [];
 
     for (const [name, provider] of this.providers.entries()) {
@@ -164,10 +160,7 @@ export class ProviderManager extends EventEmitter {
   /**
    * Update a single provider based on configuration
    */
-  private async updateProvider(
-    name: DataProviderType,
-    config: ProviderConfig
-  ): Promise<void> {
+  private async updateProvider(name: DataProviderType, config: ProviderConfig): Promise<void> {
     const provider = this.providers.get(name);
     if (!provider) {
       this.logger.error(`Provider ${name} not found`);
@@ -200,10 +193,7 @@ export class ProviderManager extends EventEmitter {
   /**
    * Connect a provider
    */
-  private async connectProvider(
-    name: DataProviderType,
-    provider: DataProvider
-  ): Promise<void> {
+  private async connectProvider(name: DataProviderType, provider: DataProvider): Promise<void> {
     this.logger.info(`Connecting provider ${name}`);
 
     try {
@@ -218,10 +208,7 @@ export class ProviderManager extends EventEmitter {
   /**
    * Disconnect a provider
    */
-  private async disconnectProvider(
-    name: DataProviderType,
-    provider: DataProvider
-  ): Promise<void> {
+  private async disconnectProvider(name: DataProviderType, provider: DataProvider): Promise<void> {
     this.logger.info(`Disconnecting provider ${name}`);
 
     try {

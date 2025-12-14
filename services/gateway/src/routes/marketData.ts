@@ -1,7 +1,19 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MarketDataClient } from '../clients/marketDataClient.js';
-import { PageCandlesRequestSchema, MultiProviderConfigSchema, BackfillRequestSchema } from '@pytrader/shared/schemas';
-import { CandlePageDirection, DataProvider, DeleteCandlesRequest, Interval, PageCandlesRequest, MultiProviderConfig, BackfillRequest } from '@pytrader/shared/types';
+import {
+  PageCandlesRequestSchema,
+  MultiProviderConfigSchema,
+  BackfillRequestSchema,
+} from '@pytrader/shared/schemas';
+import {
+  CandlePageDirection,
+  DataProvider,
+  DeleteCandlesRequest,
+  Interval,
+  PageCandlesRequest,
+  MultiProviderConfig,
+  BackfillRequest,
+} from '@pytrader/shared/types';
 
 /**
  * Register market data management routes
@@ -26,15 +38,18 @@ export async function registerMarketDataRoutes(
   /**
    * GET /market-data/stats/detailed - Get detailed statistics breakdown
    */
-  fastify.get('/market-data/stats/detailed', async (_request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const stats = await marketDataClient.getDetailedStats();
-      return reply.send(stats);
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Failed to fetch detailed statistics' });
+  fastify.get(
+    '/market-data/stats/detailed',
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const stats = await marketDataClient.getDetailedStats();
+        return reply.send(stats);
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Failed to fetch detailed statistics' });
+      }
     }
-  });
+  );
 
   /**
    * DELETE /market-data/candles - Delete candles with filters
@@ -87,7 +102,14 @@ export async function registerMarketDataRoutes(
       }
 
       const { provider, symbol, interval, cursor, direction, limit } = validationResult.data;
-      const result = await marketDataClient.getCandlesPage(provider, symbol, interval, cursor, direction, limit);
+      const result = await marketDataClient.getCandlesPage(
+        provider,
+        symbol,
+        interval,
+        cursor,
+        direction,
+        limit
+      );
       return reply.send(result);
     } catch (error) {
       fastify.log.error(error);
@@ -121,7 +143,9 @@ export async function registerMarketDataRoutes(
         });
       }
 
-      const result = await marketDataClient.updateConfig(validationResult.data as MultiProviderConfig);
+      const result = await marketDataClient.updateConfig(
+        validationResult.data as MultiProviderConfig
+      );
       return reply.send(result);
     } catch (error) {
       fastify.log.error(error);
@@ -132,15 +156,18 @@ export async function registerMarketDataRoutes(
   /**
    * POST /market-data/config/reload - Reload configuration from file
    */
-  fastify.post('/market-data/config/reload', async (_request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const result = await marketDataClient.reloadConfig();
-      return reply.send(result);
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Failed to reload configuration' });
+  fastify.post(
+    '/market-data/config/reload',
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const result = await marketDataClient.reloadConfig();
+        return reply.send(result);
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Failed to reload configuration' });
+      }
     }
-  });
+  );
 
   /**
    * GET /market-data/providers - Get all provider statuses
@@ -158,44 +185,53 @@ export async function registerMarketDataRoutes(
   /**
    * GET /market-data/providers/:provider/tickers - Get supported tickers for a provider
    */
-  fastify.get('/market-data/providers/:provider/tickers', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { provider } = request.params as { provider: DataProvider };
-      const result = await marketDataClient.getProviderTickers(provider);
-      return reply.send(result);
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Failed to fetch provider tickers' });
+  fastify.get(
+    '/market-data/providers/:provider/tickers',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { provider } = request.params as { provider: DataProvider };
+        const result = await marketDataClient.getProviderTickers(provider);
+        return reply.send(result);
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Failed to fetch provider tickers' });
+      }
     }
-  });
+  );
 
   /**
    * GET /market-data/providers/:provider/intervals - Get supported intervals for a provider
    */
-  fastify.get('/market-data/providers/:provider/intervals', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { provider } = request.params as { provider: DataProvider };
-      const result = await marketDataClient.getProviderIntervals(provider);
-      return reply.send(result);
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Failed to fetch provider intervals' });
+  fastify.get(
+    '/market-data/providers/:provider/intervals',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { provider } = request.params as { provider: DataProvider };
+        const result = await marketDataClient.getProviderIntervals(provider);
+        return reply.send(result);
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Failed to fetch provider intervals' });
+      }
     }
-  });
+  );
 
   /**
    * GET /market-data/providers/:provider/status - Get specific provider status
    */
-  fastify.get('/market-data/providers/:provider/status', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { provider } = request.params as { provider: DataProvider };
-      const result = await marketDataClient.getProviderStatus(provider);
-      return reply.send(result);
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ error: 'Failed to fetch provider status' });
+  fastify.get(
+    '/market-data/providers/:provider/status',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { provider } = request.params as { provider: DataProvider };
+        const result = await marketDataClient.getProviderStatus(provider);
+        return reply.send(result);
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.status(500).send({ error: 'Failed to fetch provider status' });
+      }
     }
-  });
+  );
 
   /**
    * POST /market-data/backfill - Trigger manual backfill

@@ -65,9 +65,7 @@ export function useProviderCapabilities(): UseProviderCapabilitiesReturn {
    */
   const fetchProviderStatus = useCallback(async (provider: DataProvider) => {
     try {
-      const response = await fetch(
-        `${config.gatewayUrl}/market-data/providers/${provider}/status`
-      );
+      const response = await fetch(`${config.gatewayUrl}/market-data/providers/${provider}/status`);
       const data = await response.json();
       return data as ProviderStatus;
     } catch (err) {

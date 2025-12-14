@@ -180,7 +180,8 @@ export class ConfigManager {
         },
         mock: {
           enabled: provider === 'mock' || !provider,
-          symbols: (provider === 'mock' || !provider) && symbols ? symbols : ['BTC/USDT', 'ETH/USDT'],
+          symbols:
+            (provider === 'mock' || !provider) && symbols ? symbols : ['BTC/USDT', 'ETH/USDT'],
           intervals: ['1m'],
           backfillOnStartup: provider === 'mock' || !provider,
         },

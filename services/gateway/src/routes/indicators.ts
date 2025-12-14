@@ -24,7 +24,14 @@ export async function registerIndicatorRoutes(
       const body = request.body as CalculateIndicatorsRequest;
 
       // Validate required fields
-      if (!body.provider || !body.symbol || !body.interval || !body.from || !body.to || !body.indicators) {
+      if (
+        !body.provider ||
+        !body.symbol ||
+        !body.interval ||
+        !body.from ||
+        !body.to ||
+        !body.indicators
+      ) {
         return reply.status(400).send({
           error: 'Invalid request body',
           details: 'Missing required fields: provider, symbol, interval, from, to, indicators',

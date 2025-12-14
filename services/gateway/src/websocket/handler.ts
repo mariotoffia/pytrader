@@ -118,8 +118,9 @@ export class WebSocketHandler {
     this.sessionManager.subscribeSignals(socket, symbol, int, strategy);
 
     // Also subscribe in the signal poller
+    // Default to 'mock' provider for now (could be made configurable)
     if (this.signalPoller) {
-      this.signalPoller.subscribe(socket, symbol, int, strategy);
+      this.signalPoller.subscribe(socket, 'mock', symbol, int, strategy);
     }
 
     this.logger.debug(`Client subscribed to signals for ${symbol}:${int}:${strategy}`);

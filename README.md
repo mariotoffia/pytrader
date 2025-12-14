@@ -36,26 +36,28 @@ make quick-start
 ```
 
 This single command will:
-1. Check dependencies (Node.js, Python)
-2. Install all packages
-3. Build all projects
-4. Start all services in background
-5. Open at http://localhost:4003
+1. Check dependencies (Node.js, Python, Docker)
+2. Install all packages (Node.js + Python)
+3. Build all projects (shared → services → frontend)
+4. Start all services with Docker
+5. Access at http://localhost:4003
 
 ### Option 2: Manual Setup
 
 ```bash
 # 1. Install dependencies
-make install
+make setup
 
-# 2. (Python) Create the analytics virtualenv with uv
-make python-env
-
-# 3. Build projects
+# 2. Build all projects
 make build
 
-# 4. Start services
-make serve-all
+# 3. Start services (choose one):
+
+# Development mode (foreground, live reload)
+make dev
+
+# OR Docker mode (background)
+make docker-up
 
 # Open browser to http://localhost:4003
 ```
@@ -63,10 +65,46 @@ make serve-all
 ### Stop Services
 
 ```bash
+# If using dev mode:
+Press Ctrl+C
+
+# If using docker mode:
+make docker-down
+
+# To stop everything (kills orphans too):
 make stop
 ```
 
 For more commands, run `make help`
+
+---
+
+## Quick Start for LLMs/Automation
+
+**Simplest workflow:**
+
+```bash
+make setup     # Install dependencies
+make build     # Build all projects
+make dev       # Start development mode
+```
+
+**Common commands:**
+```bash
+make test      # Run all tests
+make quality   # Check code quality (lint + format + typecheck)
+make clean     # Clean build artifacts
+```
+
+**Service architecture:**
+```
+Frontend (4003) → Gateway (4000) → Market Data (4001)
+                                 → Analytics (4002)
+```
+
+**Documentation:**
+- [COMMANDS.md](./COMMANDS.md) - Complete command reference for automation
+- [DEVELOPMENT.md](./DEVELOPMENT.md) - Comprehensive developer guide
 
 ---
 
@@ -75,18 +113,22 @@ For more commands, run `make help`
 ### Quick Reference
 
 ```bash
-make help         # Show all available commands
-make install      # Install dependencies (Node.js + Python)
-make python-env   # Create/refresh Python venv for analytics using uv
-make build        # Build all TypeScript projects
-make test         # Run all tests
-make serve-all    # Start all services in background
-make stop         # Stop all services
-make status       # Check service status
-make logs         # View service logs
-make clean        # Remove build artifacts
-make clean-python-env # Remove analytics venv and Python caches
+make help            # Show all available commands
+make setup           # Install dependencies (Node.js + Python)
+make build           # Build all TypeScript projects (shared → services → frontend)
+make test            # Run all tests (TypeScript + Python)
+make dev             # Start all services in development mode (foreground)
+make docker-up       # Start all services with Docker (background)
+make docker-down     # Stop Docker services
+make status          # Check service status
+make docker-logs     # View Docker service logs
+make lint            # Check code quality (ESLint)
+make format          # Format code (Prettier)
+make quality         # Run all quality checks (lint + format + typecheck)
+make clean           # Remove build artifacts
 ```
+
+**See [COMMANDS.md](./COMMANDS.md) for complete command reference**
 
 ### Detailed Setup
 

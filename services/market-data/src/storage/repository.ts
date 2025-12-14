@@ -136,12 +136,7 @@ export class CandleRepository {
   /**
    * Query candles by time range
    */
-  getCandlesByRange(
-    symbol: string,
-    interval: Interval,
-    from: number,
-    to: number
-  ): OHLCVCandle[] {
+  getCandlesByRange(symbol: string, interval: Interval, from: number, to: number): OHLCVCandle[] {
     const rows = this.queryByRangeStmt.all(symbol, interval, from, to) as any[];
     return rows.map((row) => ({
       symbol: row.symbol,
@@ -166,7 +161,13 @@ export class CandleRepository {
     from: number,
     to: number
   ): OHLCVCandle[] {
-    const rows = this.queryByProviderAndRangeStmt.all(provider, symbol, interval, from, to) as any[];
+    const rows = this.queryByProviderAndRangeStmt.all(
+      provider,
+      symbol,
+      interval,
+      from,
+      to
+    ) as any[];
     return rows.map((row) => ({
       symbol: row.symbol,
       interval: row.interval,
@@ -302,11 +303,7 @@ export class CandleRepository {
   /**
    * Delete candles with flexible filtering
    */
-  deleteCandles(filters: {
-    provider?: string;
-    symbol?: string;
-    interval?: string;
-  }): number {
+  deleteCandles(filters: { provider?: string; symbol?: string; interval?: string }): number {
     const conditions: string[] = [];
     const params: any[] = [];
 

@@ -40,7 +40,7 @@ describe('SignalPoller', () => {
       mockAnalyticsClient,
       logger,
       1, // 1 second polling interval
-      2  // 2 second lookback
+      2 // 2 second lookback
     );
 
     socket1 = new MockSocket('socket1');
@@ -63,14 +63,14 @@ describe('SignalPoller', () => {
       poller.subscribe(socket1, 'BTC/USDT', '1m', 'ema_crossover_rsi');
       poller.start();
 
-      await new Promise(resolve => setTimeout(resolve, 10)); // Let initial poll happen
+      await new Promise((resolve) => setTimeout(resolve, 10)); // Let initial poll happen
 
       const callCountBefore = vi.mocked(mockAnalyticsClient.generateSignals).mock.calls.length;
 
       poller.stop();
 
       // Wait a bit to ensure no more calls
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const callCountAfter = vi.mocked(mockAnalyticsClient.generateSignals).mock.calls.length;
       expect(callCountAfter).toBe(callCountBefore);

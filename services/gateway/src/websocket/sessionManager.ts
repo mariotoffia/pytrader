@@ -203,11 +203,7 @@ export class SessionManager {
   /**
    * Get all clients subscribed to specific signals
    */
-  getSignalSubscribers(
-    symbol: string,
-    interval: Interval,
-    strategyId: string
-  ): Set<WebSocket> {
+  getSignalSubscribers(symbol: string, interval: Interval, strategyId: string): Set<WebSocket> {
     const key = this.makeSignalKey(symbol, interval, strategyId);
     return this.signalSubscribers.get(key) || new Set();
   }

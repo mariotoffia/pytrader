@@ -1,6 +1,6 @@
 import type { WebSocket } from 'ws';
 import { AnalyticsClient } from '../clients/analyticsClient.js';
-import { Interval, Signal, ServerMessage } from '@pytrader/shared/types';
+import { Interval, Signal, ServerMessage, DataProvider } from '@pytrader/shared/types';
 import pino from 'pino';
 
 /**
@@ -12,6 +12,7 @@ type SignalSubscriptionKey = string;
  * Subscription details
  */
 interface SignalSubscription {
+  provider: DataProvider;
   symbol: string;
   interval: Interval;
   strategyId: string;
@@ -70,6 +71,7 @@ export class SignalPoller {
    */
   subscribe(
     socket: WebSocket,
+    provider: DataProvider,
     symbol: string,
     interval: Interval,
     strategyId: string
@@ -79,6 +81,7 @@ export class SignalPoller {
     let subscription = this.subscriptions.get(key);
     if (!subscription) {
       subscription = {
+        provider,
         symbol,
         interval,
         strategyId,
@@ -96,12 +99,7 @@ export class SignalPoller {
   /**
    * Unsubscribe a client from signals
    */
-  unsubscribe(
-    socket: WebSocket,
-    symbol: string,
-    interval: Interval,
-    strategyId: string
-  ): void {
+  unsubscribe(socket: WebSocket, symbol: string, interval: Interval, strategyId: string): void {
     const key = this.makeKey(symbol, interval, strategyId);
     const subscription = this.subscriptions.get(key);
 
@@ -181,6 +179,7 @@ export class SignalPoller {
 
     try {
       const signals = await this.analyticsClient.generateSignals(
+        subscription.provider,
         subscription.symbol,
         subscription.interval,
         from,

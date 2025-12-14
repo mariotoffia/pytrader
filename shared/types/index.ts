@@ -17,24 +17,24 @@ export type Interval = '1m' | '5m' | '15m' | '30m' | '1h' | '4h' | '1d' | '1w';
 export interface OHLCVCandle {
   symbol: string;
   interval: Interval;
-  timestamp: number;  // Unix timestamp in milliseconds (UTC)
+  timestamp: number; // Unix timestamp in milliseconds (UTC)
   open: number;
   high: number;
   low: number;
   close: number;
   volume: number;
-  provider?: string;  // Data source provider (e.g., 'binance', 'coinbase', 'mock')
+  provider?: string; // Data source provider (e.g., 'binance', 'coinbase', 'mock')
 }
 
 /**
  * Trading symbol information
  */
 export interface Symbol {
-  symbol: string;        // e.g., "BTC/USDT"
-  exchange: string;      // e.g., "binance", "coinbase"
+  symbol: string; // e.g., "BTC/USDT"
+  exchange: string; // e.g., "binance", "coinbase"
   type: 'crypto' | 'stock' | 'forex';
-  baseAsset: string;     // e.g., "BTC"
-  quoteAsset: string;    // e.g., "USDT"
+  baseAsset: string; // e.g., "BTC"
+  quoteAsset: string; // e.g., "USDT"
 }
 
 /**
@@ -49,8 +49,8 @@ export interface RawCandle {
   low: number;
   close: number;
   volume: number;
-  provider?: string;  // Data source provider
-  [key: string]: any;  // Allow additional provider-specific fields
+  provider?: string; // Data source provider
+  [key: string]: any; // Allow additional provider-specific fields
 }
 
 // ============================================================================
@@ -69,9 +69,9 @@ export interface Signal {
   symbol: string;
   timestamp: number;
   action: SignalAction;
-  confidence: number;    // 0.0 to 1.0
-  price: number;         // Price at which the signal was generated
-  strategyId: string;    // e.g., "ema_crossover_rsi"
+  confidence: number; // 0.0 to 1.0
+  price: number; // Price at which the signal was generated
+  strategyId: string; // e.g., "ema_crossover_rsi"
   metadata?: Record<string, any>;
 }
 
@@ -259,8 +259,8 @@ export interface GetCandlesRequest {
   provider: DataProvider;
   symbol: string;
   interval: Interval;
-  from: number;  // Unix timestamp in milliseconds
-  to: number;    // Unix timestamp in milliseconds
+  from: number; // Unix timestamp in milliseconds
+  to: number; // Unix timestamp in milliseconds
 }
 
 /**
@@ -357,7 +357,7 @@ export interface MarketDataConfig {
   port: number;
   provider: DataProvider;
   sqlitePath: string;
-  symbols: string[];  // e.g., ["BTC/USDT", "ETH/USDT"]
+  symbols: string[]; // e.g., ["BTC/USDT", "ETH/USDT"]
   logLevel: 'debug' | 'info' | 'warn' | 'error';
 }
 
@@ -406,8 +406,8 @@ export interface BackfillRequest {
   provider: DataProvider;
   symbol: string;
   interval: Interval;
-  from?: number;  // Unix timestamp in milliseconds
-  to?: number;    // Unix timestamp in milliseconds
+  from?: number; // Unix timestamp in milliseconds
+  to?: number; // Unix timestamp in milliseconds
   hours?: number; // Alternative to from/to
 }
 

@@ -127,4 +127,3 @@ describe('CandleRepository paging', () => {
     expect(page[0].provider).toBe('binance');
   });
 });
-

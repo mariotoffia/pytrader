@@ -85,11 +85,7 @@ describe('WebSocketHandler', () => {
       handler.handleConnection(socket, {} as any);
       socket.emit('message', Buffer.from(JSON.stringify(message)));
 
-      expect(mockSessionManager.subscribeCandles).toHaveBeenCalledWith(
-        socket,
-        'BTC/USDT',
-        '1m'
-      );
+      expect(mockSessionManager.subscribeCandles).toHaveBeenCalledWith(socket, 'BTC/USDT', '1m');
     });
 
     it('should send error for invalid message format', () => {
@@ -99,12 +95,8 @@ describe('WebSocketHandler', () => {
       handler.handleConnection(socket, {} as any);
       socket.emit('message', Buffer.from(JSON.stringify(invalidMessage)));
 
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('error')
-      );
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('Invalid message format')
-      );
+      expect(socket.send).toHaveBeenCalledWith(expect.stringContaining('error'));
+      expect(socket.send).toHaveBeenCalledWith(expect.stringContaining('Invalid message format'));
     });
   });
 
@@ -119,11 +111,7 @@ describe('WebSocketHandler', () => {
       handler.handleConnection(socket, {} as any);
       socket.emit('message', Buffer.from(JSON.stringify(message)));
 
-      expect(mockSessionManager.unsubscribeCandles).toHaveBeenCalledWith(
-        socket,
-        'ETH/USDT',
-        '5m'
-      );
+      expect(mockSessionManager.unsubscribeCandles).toHaveBeenCalledWith(socket, 'ETH/USDT', '5m');
     });
   });
 
@@ -216,9 +204,7 @@ describe('WebSocketHandler', () => {
       handler.handleConnection(socket, {} as any);
       socket.emit('message', Buffer.from(JSON.stringify(message)));
 
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('error')
-      );
+      expect(socket.send).toHaveBeenCalledWith(expect.stringContaining('error'));
     });
   });
 
@@ -290,9 +276,7 @@ describe('WebSocketHandler', () => {
       handler.handleConnection(socket, {} as any);
       socket.emit('message', Buffer.from('not valid json'));
 
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('error')
-      );
+      expect(socket.send).toHaveBeenCalledWith(expect.stringContaining('error'));
     });
 
     it('should handle buffer parsing errors gracefully', () => {

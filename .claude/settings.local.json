@@ -36,7 +36,11 @@
       "Bash(make build:*)",
       "Bash(tee:*)",
       "Bash(sqlite3:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(test:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run format:check:*)",
+      "Bash(npm run format:*)"
     ]
   }
 }

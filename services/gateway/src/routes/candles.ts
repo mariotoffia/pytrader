@@ -1,7 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { MarketDataClient } from '../clients/marketDataClient.js';
 import { GetCandlesRequestSchema } from '@pytrader/shared/schemas';
-import { GetCandlesRequest, GetCandlesResponse, Interval, DataProvider } from '@pytrader/shared/types';
+import {
+  GetCandlesRequest,
+  GetCandlesResponse,
+  Interval,
+  DataProvider,
+} from '@pytrader/shared/types';
 
 /**
  * Register candle-related routes

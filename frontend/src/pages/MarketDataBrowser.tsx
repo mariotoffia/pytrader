@@ -22,9 +22,16 @@ function toDateTimeLocalValue(timestamp: number): string {
 
 export function MarketDataBrowser() {
   const gatewayUrl = config.gatewayUrl;
-  const { stats, loading: statsLoading, error: statsError } = useMarketDataManagement({ gatewayUrl });
+  const {
+    stats,
+    loading: statsLoading,
+    error: statsError,
+  } = useMarketDataManagement({ gatewayUrl });
 
-  const providers = useMemo(() => Array.from(new Set(stats.map((s) => s.provider))).sort(), [stats]);
+  const providers = useMemo(
+    () => Array.from(new Set(stats.map((s) => s.provider))).sort(),
+    [stats]
+  );
 
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [selectedSymbol, setSelectedSymbol] = useState<string>('');
@@ -33,7 +40,11 @@ export function MarketDataBrowser() {
 
   const symbols = useMemo(() => {
     return Array.from(
-      new Set(stats.filter((s) => !selectedProvider || s.provider === selectedProvider).map((s) => s.symbol))
+      new Set(
+        stats
+          .filter((s) => !selectedProvider || s.provider === selectedProvider)
+          .map((s) => s.symbol)
+      )
     ).sort();
   }, [stats, selectedProvider]);
 
@@ -74,7 +85,10 @@ export function MarketDataBrowser() {
   useEffect(() => {
     if (!selectedProvider || !selectedSymbol || !selectedInterval) return;
     const stat = stats.find(
-      (s) => s.provider === selectedProvider && s.symbol === selectedSymbol && s.interval === selectedInterval
+      (s) =>
+        s.provider === selectedProvider &&
+        s.symbol === selectedSymbol &&
+        s.interval === selectedInterval
     );
     setStartTimeLocal(toDateTimeLocalValue(stat?.newestTimestamp ?? Date.now()));
   }, [stats, selectedProvider, selectedSymbol, selectedInterval]);
@@ -172,7 +186,16 @@ export function MarketDataBrowser() {
     } finally {
       setLoadingAfter(false);
     }
-  }, [candles, fetchPage, hasMoreAfter, loadingAfter, loadingInitial, selectedInterval, selectedProvider, selectedSymbol]);
+  }, [
+    candles,
+    fetchPage,
+    hasMoreAfter,
+    loadingAfter,
+    loadingInitial,
+    selectedInterval,
+    selectedProvider,
+    selectedSymbol,
+  ]);
 
   const loadMoreBefore = useCallback(async () => {
     if (loadingInitial || loadingBefore || !hasMoreBefore) return;
@@ -191,7 +214,10 @@ export function MarketDataBrowser() {
         return;
       }
 
-      pendingPrependAdjust.current = { scrollTop: currentScrollTop, pixels: page.candles.length * ROW_HEIGHT };
+      pendingPrependAdjust.current = {
+        scrollTop: currentScrollTop,
+        pixels: page.candles.length * ROW_HEIGHT,
+      };
       setCandles((prev) => [...page.candles, ...prev]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch older candles';
@@ -199,7 +225,16 @@ export function MarketDataBrowser() {
     } finally {
       setLoadingBefore(false);
     }
-  }, [candles, fetchPage, hasMoreBefore, loadingBefore, loadingInitial, selectedInterval, selectedProvider, selectedSymbol]);
+  }, [
+    candles,
+    fetchPage,
+    hasMoreBefore,
+    loadingBefore,
+    loadingInitial,
+    selectedInterval,
+    selectedProvider,
+    selectedSymbol,
+  ]);
 
   const handleScroll = useCallback(
     (info: VirtualizedListScrollInfo) => {
@@ -240,7 +275,9 @@ export function MarketDataBrowser() {
       }}
     >
       <div>
-        <h1 style={{ margin: 0, color: '#fff', fontSize: '24px', marginBottom: '8px' }}>Market Data Browser</h1>
+        <h1 style={{ margin: 0, color: '#fff', fontSize: '24px', marginBottom: '8px' }}>
+          Market Data Browser
+        </h1>
         <p style={{ margin: 0, color: '#787b86', fontSize: '14px' }}>
           Browse stored candles with provider/interval filtering and cursor paging.
         </p>
@@ -279,11 +316,20 @@ export function MarketDataBrowser() {
         onLoad={() => void loadInitial()}
       />
 
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', color: '#787b86', fontSize: '12px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '16px',
+          flexWrap: 'wrap',
+          color: '#787b86',
+          fontSize: '12px',
+        }}
+      >
         <div>Loaded: {candles.length.toLocaleString()} candles</div>
         {loadedRange && (
           <div>
-            Range: {new Date(loadedRange.from).toLocaleString()} → {new Date(loadedRange.to).toLocaleString()}
+            Range: {new Date(loadedRange.from).toLocaleString()} →{' '}
+            {new Date(loadedRange.to).toLocaleString()}
           </div>
         )}
         <div>

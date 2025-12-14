@@ -18,7 +18,7 @@ export function useSignals({
   interval,
   gatewayUrl,
   wsSocket,
-  strategyId = 'ema_crossover_rsi'
+  strategyId = 'ema_crossover_rsi',
 }: UseSignalsOptions) {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,7 +105,7 @@ export function useSignals({
           if (newSignal.symbol === symbol && newSignal.strategyId === strategyId) {
             setSignals((prev) => {
               // Check if signal already exists
-              const exists = prev.some(s => s.timestamp === newSignal.timestamp);
+              const exists = prev.some((s) => s.timestamp === newSignal.timestamp);
               if (exists) {
                 return prev;
               }

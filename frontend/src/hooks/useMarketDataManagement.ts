@@ -30,39 +30,41 @@ export function useMarketDataManagement({ gatewayUrl }: UseMarketDataManagementO
     }
   }, [gatewayUrl]);
 
-  const deleteCandles = useCallback(async (filters: DeleteCandlesRequest): Promise<DeleteCandlesResponse> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const deleteCandles = useCallback(
+    async (filters: DeleteCandlesRequest): Promise<DeleteCandlesResponse> => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const params = new URLSearchParams();
-      if (filters.provider) params.append('provider', filters.provider);
-      if (filters.symbol) params.append('symbol', filters.symbol);
-      if (filters.interval) params.append('interval', filters.interval);
+        const params = new URLSearchParams();
+        if (filters.provider) params.append('provider', filters.provider);
+        if (filters.symbol) params.append('symbol', filters.symbol);
+        if (filters.interval) params.append('interval', filters.interval);
 
-      const response = await fetch(
-        `${gatewayUrl}/market-data/candles?${params}`,
-        { method: 'DELETE' }
-      );
+        const response = await fetch(`${gatewayUrl}/market-data/candles?${params}`, {
+          method: 'DELETE',
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to delete candles: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Failed to delete candles: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        // Refresh stats after deletion
+        await fetchStats();
+
+        return result;
+      } catch (err: any) {
+        setError(err.message);
+        console.error('Error deleting candles:', err);
+        throw err;
+      } finally {
+        setLoading(false);
       }
-
-      const result = await response.json();
-
-      // Refresh stats after deletion
-      await fetchStats();
-
-      return result;
-    } catch (err: any) {
-      setError(err.message);
-      console.error('Error deleting candles:', err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [gatewayUrl, fetchStats]);
+    },
+    [gatewayUrl, fetchStats]
+  );
 
   useEffect(() => {
     fetchStats();
@@ -73,6 +75,6 @@ export function useMarketDataManagement({ gatewayUrl }: UseMarketDataManagementO
     loading,
     error,
     refetch: fetchStats,
-    deleteCandles
+    deleteCandles,
   };
 }

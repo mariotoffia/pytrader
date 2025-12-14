@@ -24,8 +24,14 @@ describe('App', () => {
           ok: true,
           json: async () => ({
             providers: [
-              { name: 'mock', enabled: true, connected: true, subscriptions: [], errorMessage: null }
-            ]
+              {
+                name: 'mock',
+                enabled: true,
+                connected: true,
+                subscriptions: [],
+                errorMessage: null,
+              },
+            ],
           }),
         } as Response);
       } else if (urlString.includes('/market-data/providers/mock/tickers')) {
@@ -193,9 +199,9 @@ describe('App', () => {
     });
 
     // Find the candles fetch call (not the first one which is providers status)
-    const candlesFetchCall = vi.mocked(fetch).mock.calls.find(
-      (call) => call[0].toString().includes('/candles?provider')
-    );
+    const candlesFetchCall = vi
+      .mocked(fetch)
+      .mock.calls.find((call) => call[0].toString().includes('/candles?provider'));
     expect(candlesFetchCall).toBeDefined();
     const fetchUrl = candlesFetchCall![0] as string;
     expect(fetchUrl).toContain('/candles');

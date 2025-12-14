@@ -142,12 +142,12 @@ export abstract class DataProvider extends EventEmitter {
 
       if (timeSinceLastRequest < minInterval) {
         const delay = minInterval - timeSinceLastRequest;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
     // Check requests/weight per minute
-    // Note: This is a simplified implementation. For weight-based limits, 
+    // Note: This is a simplified implementation. For weight-based limits,
     // we would need to pass the weight of the request.
     // Assuming 1 request = 1 weight for now unless specified otherwise.
     const limitPerMinute = metadata.requestsPerMinute || metadata.weightPerMinute;
@@ -155,7 +155,7 @@ export abstract class DataProvider extends EventEmitter {
       if (this.requestCount >= limitPerMinute) {
         const delay = 60000 - (now - this.windowStartTime);
         if (delay > 0) {
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           // Reset after waiting
           this.windowStartTime = Date.now();
           this.requestCount = 0;

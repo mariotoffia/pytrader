@@ -30,10 +30,7 @@ export function VirtualizedList({
 
   const totalHeight = rowCount * rowHeight;
   const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan);
-  const endIndex = Math.min(
-    rowCount - 1,
-    Math.floor((scrollTop + height) / rowHeight) + overscan
-  );
+  const endIndex = Math.min(rowCount - 1, Math.floor((scrollTop + height) / rowHeight) + overscan);
 
   const indices = useMemo(() => {
     if (rowCount === 0) return [];

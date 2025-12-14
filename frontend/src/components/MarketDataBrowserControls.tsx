@@ -49,7 +49,11 @@ export function MarketDataBrowserControls({
       }}
     >
       <div style={{ flex: '1 1 180px' }}>
-        <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>Provider</label>
+        <label
+          style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+        >
+          Provider
+        </label>
         <select
           value={selectedProvider}
           onChange={(e) => onProviderChange(e.target.value)}
@@ -74,7 +78,11 @@ export function MarketDataBrowserControls({
       </div>
 
       <div style={{ flex: '1 1 220px' }}>
-        <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>Symbol</label>
+        <label
+          style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+        >
+          Symbol
+        </label>
         <select
           value={selectedSymbol}
           onChange={(e) => onSymbolChange(e.target.value)}
@@ -99,7 +107,11 @@ export function MarketDataBrowserControls({
       </div>
 
       <div style={{ flex: '0 0 120px' }}>
-        <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>Interval</label>
+        <label
+          style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+        >
+          Interval
+        </label>
         <select
           value={selectedInterval}
           onChange={(e) => onIntervalChange(e.target.value as Interval)}
@@ -124,7 +136,11 @@ export function MarketDataBrowserControls({
       </div>
 
       <div style={{ flex: '0 0 220px' }}>
-        <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>Start time</label>
+        <label
+          style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+        >
+          Start time
+        </label>
         <input
           type="datetime-local"
           value={startTimeLocal}
@@ -161,4 +177,3 @@ export function MarketDataBrowserControls({
     </div>
   );
 }
-

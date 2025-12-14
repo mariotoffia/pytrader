@@ -9,7 +9,13 @@ import { ProviderConfigCard } from '../components/ProviderConfigCard';
  * Allows users to configure provider settings, symbols, and intervals
  */
 export function ConfigManagement() {
-  const { config, loading: configLoading, error: configError, updateConfig, reloadConfig } = useConfig();
+  const {
+    config,
+    loading: configLoading,
+    error: configError,
+    updateConfig,
+    reloadConfig,
+  } = useConfig();
   const { capabilities, statuses, loading: capabilitiesLoading } = useProviderCapabilities();
 
   // Local state for editing (allows cancel without saving)

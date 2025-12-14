@@ -176,7 +176,9 @@ export class MarketDataClient {
   /**
    * Update multi-provider configuration
    */
-  async updateConfig(config: MultiProviderConfig): Promise<{ success: boolean; config: MultiProviderConfig }> {
+  async updateConfig(
+    config: MultiProviderConfig
+  ): Promise<{ success: boolean; config: MultiProviderConfig }> {
     const url = `${this.baseUrl}/internal/config`;
     const response = await fetch(url, {
       method: 'PUT',
@@ -222,7 +224,9 @@ export class MarketDataClient {
   /**
    * Get supported tickers for a provider
    */
-  async getProviderTickers(provider: DataProvider): Promise<{ provider: string; tickers: string[] }> {
+  async getProviderTickers(
+    provider: DataProvider
+  ): Promise<{ provider: string; tickers: string[] }> {
     const url = `${this.baseUrl}/internal/providers/${provider}/tickers`;
     const response = await fetch(url);
 
@@ -236,7 +240,9 @@ export class MarketDataClient {
   /**
    * Get supported intervals for a provider
    */
-  async getProviderIntervals(provider: DataProvider): Promise<{ provider: string; intervals: Interval[] }> {
+  async getProviderIntervals(
+    provider: DataProvider
+  ): Promise<{ provider: string; intervals: Interval[] }> {
     const url = `${this.baseUrl}/internal/providers/${provider}/intervals`;
     const response = await fetch(url);
 

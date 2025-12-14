@@ -16,9 +16,9 @@ export function MarketDataMgmt() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Extract unique values for filters
-  const providers = Array.from(new Set(stats.map(s => s.provider))).sort();
-  const intervals = Array.from(new Set(stats.map(s => s.interval))).sort();
-  const symbols = Array.from(new Set(stats.map(s => s.symbol))).sort();
+  const providers = Array.from(new Set(stats.map((s) => s.provider))).sort();
+  const intervals = Array.from(new Set(stats.map((s) => s.interval))).sort();
+  const symbols = Array.from(new Set(stats.map((s) => s.symbol))).sort();
 
   // Calculate totals
   const totalCandles = stats.reduce((sum, s) => sum + s.count, 0);
@@ -60,7 +60,7 @@ export function MarketDataMgmt() {
   };
 
   // Filter stats based on selections
-  const filteredStats = stats.filter(s => {
+  const filteredStats = stats.filter((s) => {
     if (selectedProvider && s.provider !== selectedProvider) return false;
     if (selectedInterval && s.interval !== selectedInterval) return false;
     if (selectedSymbol && s.symbol !== selectedSymbol) return false;
@@ -138,8 +138,12 @@ export function MarketDataMgmt() {
             border: '1px solid #2b2b43',
           }}
         >
-          <div style={{ color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>Total Candles</div>
-          <div style={{ color: '#fff', fontSize: '24px', fontWeight: 600 }}>{totalCandles.toLocaleString()}</div>
+          <div style={{ color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>
+            Total Candles
+          </div>
+          <div style={{ color: '#fff', fontSize: '24px', fontWeight: 600 }}>
+            {totalCandles.toLocaleString()}
+          </div>
         </div>
         <div
           style={{
@@ -190,7 +194,9 @@ export function MarketDataMgmt() {
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
           {/* Provider Filter */}
           <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>
+            <label
+              style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+            >
               Provider
             </label>
             <select
@@ -207,15 +213,19 @@ export function MarketDataMgmt() {
               }}
             >
               <option value="">All Providers</option>
-              {providers.map(p => (
-                <option key={p} value={p}>{p}</option>
+              {providers.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Interval Filter */}
           <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>
+            <label
+              style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+            >
               Interval
             </label>
             <select
@@ -232,15 +242,19 @@ export function MarketDataMgmt() {
               }}
             >
               <option value="">All Intervals</option>
-              {intervals.map(i => (
-                <option key={i} value={i}>{i}</option>
+              {intervals.map((i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Symbol Filter */}
           <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}>
+            <label
+              style={{ display: 'block', color: '#787b86', fontSize: '12px', marginBottom: '4px' }}
+            >
               Symbol
             </label>
             <select
@@ -257,8 +271,10 @@ export function MarketDataMgmt() {
               }}
             >
               <option value="">All Symbols</option>
-              {symbols.map(s => (
-                <option key={s} value={s}>{s}</option>
+              {symbols.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
@@ -305,12 +321,18 @@ export function MarketDataMgmt() {
             disabled={!selectedProvider || !selectedInterval || loading || isDeleting}
             style={{
               padding: '8px 16px',
-              background: selectedProvider && selectedInterval && !loading && !isDeleting ? '#ef5350' : '#2b2b43',
+              background:
+                selectedProvider && selectedInterval && !loading && !isDeleting
+                  ? '#ef5350'
+                  : '#2b2b43',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
               fontSize: '14px',
-              cursor: selectedProvider && selectedInterval && !loading && !isDeleting ? 'pointer' : 'not-allowed',
+              cursor:
+                selectedProvider && selectedInterval && !loading && !isDeleting
+                  ? 'pointer'
+                  : 'not-allowed',
               opacity: selectedProvider && selectedInterval && !loading && !isDeleting ? 1 : 0.5,
             }}
           >
@@ -371,7 +393,8 @@ export function MarketDataMgmt() {
             <div style={{ color: '#787b86', fontSize: '12px', marginBottom: '16px' }}>
               {deleteType === 'provider' && `Provider: ${selectedProvider}`}
               {deleteType === 'interval' && `Interval: ${selectedInterval}`}
-              {deleteType === 'both' && `Provider: ${selectedProvider}, Interval: ${selectedInterval}`}
+              {deleteType === 'both' &&
+                `Provider: ${selectedProvider}, Interval: ${selectedInterval}`}
             </div>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button
@@ -425,22 +448,70 @@ export function MarketDataMgmt() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#131722', borderBottom: '1px solid #2b2b43' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: '#787b86', fontSize: '12px', fontWeight: 600 }}>
+                <th
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    color: '#787b86',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
                   Provider
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: '#787b86', fontSize: '12px', fontWeight: 600 }}>
+                <th
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    color: '#787b86',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
                   Symbol
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: '#787b86', fontSize: '12px', fontWeight: 600 }}>
+                <th
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    color: '#787b86',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
                   Interval
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', color: '#787b86', fontSize: '12px', fontWeight: 600 }}>
+                <th
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    color: '#787b86',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
                   Candles
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: '#787b86', fontSize: '12px', fontWeight: 600 }}>
+                <th
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    color: '#787b86',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
                   Oldest
                 </th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: '#787b86', fontSize: '12px', fontWeight: 600 }}>
+                <th
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    color: '#787b86',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
                   Newest
                 </th>
               </tr>
@@ -448,45 +519,59 @@ export function MarketDataMgmt() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#787b86' }}>
+                  <td
+                    colSpan={6}
+                    style={{ padding: '24px', textAlign: 'center', color: '#787b86' }}
+                  >
                     Loading statistics...
                   </td>
                 </tr>
               )}
               {!loading && filteredStats.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#787b86' }}>
+                  <td
+                    colSpan={6}
+                    style={{ padding: '24px', textAlign: 'center', color: '#787b86' }}
+                  >
                     No data available
                   </td>
                 </tr>
               )}
-              {!loading && filteredStats.map((stat, idx) => (
-                <tr
-                  key={`${stat.provider}-${stat.symbol}-${stat.interval}`}
-                  style={{
-                    borderBottom: idx < filteredStats.length - 1 ? '1px solid #2b2b43' : 'none',
-                  }}
-                >
-                  <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px' }}>
-                    {stat.provider}
-                  </td>
-                  <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px' }}>
-                    {stat.symbol}
-                  </td>
-                  <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px' }}>
-                    {stat.interval}
-                  </td>
-                  <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px', textAlign: 'right' }}>
-                    {stat.count.toLocaleString()}
-                  </td>
-                  <td style={{ padding: '12px 16px', color: '#787b86', fontSize: '12px' }}>
-                    {formatTimestamp(stat.oldestTimestamp)}
-                  </td>
-                  <td style={{ padding: '12px 16px', color: '#787b86', fontSize: '12px' }}>
-                    {formatTimestamp(stat.newestTimestamp)}
-                  </td>
-                </tr>
-              ))}
+              {!loading &&
+                filteredStats.map((stat, idx) => (
+                  <tr
+                    key={`${stat.provider}-${stat.symbol}-${stat.interval}`}
+                    style={{
+                      borderBottom: idx < filteredStats.length - 1 ? '1px solid #2b2b43' : 'none',
+                    }}
+                  >
+                    <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px' }}>
+                      {stat.provider}
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px' }}>
+                      {stat.symbol}
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#d1d4dc', fontSize: '14px' }}>
+                      {stat.interval}
+                    </td>
+                    <td
+                      style={{
+                        padding: '12px 16px',
+                        color: '#d1d4dc',
+                        fontSize: '14px',
+                        textAlign: 'right',
+                      }}
+                    >
+                      {stat.count.toLocaleString()}
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#787b86', fontSize: '12px' }}>
+                      {formatTimestamp(stat.oldestTimestamp)}
+                    </td>
+                    <td style={{ padding: '12px 16px', color: '#787b86', fontSize: '12px' }}>
+                      {formatTimestamp(stat.newestTimestamp)}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

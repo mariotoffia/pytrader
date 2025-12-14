@@ -16,7 +16,12 @@ export function isDebugEnabled(scope?: string): boolean {
   if (v === '1' || v === 'true' || v === '*' || v === 'all') return true;
   if (!scope) return true;
 
-  const scopes = new Set(v.split(',').map((s) => s.trim()).filter(Boolean));
+  const scopes = new Set(
+    v
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+  );
   return scopes.has(scope.toLowerCase()) || scopes.has('all') || scopes.has('*');
 }
 
@@ -37,4 +42,3 @@ export function createRequestId(prefix = 'req'): string {
   }
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
-

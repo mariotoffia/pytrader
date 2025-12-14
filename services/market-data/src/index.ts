@@ -119,9 +119,7 @@ class MarketDataService {
       for (const symbol of providerConfig.symbols) {
         for (const interval of providerConfig.intervals) {
           try {
-            this.fastify.log.debug(
-              `[${providerName}] Backfilling ${symbol} ${interval}...`
-            );
+            this.fastify.log.debug(`[${providerName}] Backfilling ${symbol} ${interval}...`);
 
             // Fetch historical candles
             const rawCandles = await provider.getHistoricalCandles(symbol, interval, from, to);

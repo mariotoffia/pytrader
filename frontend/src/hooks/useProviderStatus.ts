@@ -55,7 +55,7 @@ export function useProviderStatus({
         throw new Error(`Failed to fetch providers: ${response.statusText}`);
       }
 
-      const data = await response.json() as { providers: ProviderStatus[] };
+      const data = (await response.json()) as { providers: ProviderStatus[] };
       setProviders(data.providers);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';

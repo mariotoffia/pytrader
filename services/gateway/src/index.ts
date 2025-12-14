@@ -1,7 +1,7 @@
 // Load environment variables from .env file
 import 'dotenv/config';
 
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import { randomUUID } from 'crypto';
@@ -54,7 +54,7 @@ class GatewayService {
 
     const traceRequests = process.env.TRACE_REQUESTS === '1';
 
-    this.fastify.addHook('onRequest', async (request, reply) => {
+    this.fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
       reply.header('x-request-id', request.id);
       if (!traceRequests) return;
       this.fastify.log.info(
@@ -68,13 +68,13 @@ class GatewayService {
       );
     });
 
-    this.fastify.addHook('preHandler', async (request) => {
+    this.fastify.addHook('preHandler', async (request: FastifyRequest) => {
       if (!traceRequests) return;
       if (request.method === 'GET' || request.method === 'HEAD') return;
       this.fastify.log.info({ requestId: request.id, body: request.body }, 'Request body');
     });
 
-    this.fastify.addHook('onResponse', async (request, reply) => {
+    this.fastify.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
       if (!traceRequests) return;
       this.fastify.log.info(
         {
@@ -87,10 +87,13 @@ class GatewayService {
       );
     });
 
-    this.fastify.addHook('onError', async (request, _reply, error) => {
-      if (!traceRequests) return;
-      this.fastify.log.error({ requestId: request.id, err: error }, 'Request error');
-    });
+    this.fastify.addHook(
+      'onError',
+      async (request: FastifyRequest, _reply: FastifyReply, error: Error) => {
+        if (!traceRequests) return;
+        this.fastify.log.error({ requestId: request.id, err: error }, 'Request error');
+      }
+    );
   }
 
   /**

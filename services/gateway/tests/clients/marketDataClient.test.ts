@@ -34,24 +34,12 @@ describe('MarketDataClient', () => {
       const candles = await client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000);
 
       expect(candles).toEqual(mockCandles);
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/internal/candles?')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('provider=mock')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('symbol=BTC%2FUSDT')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('interval=1m')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('from=1000000')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('to=2000000')
-      );
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/internal/candles?'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('provider=mock'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('symbol=BTC%2FUSDT'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('interval=1m'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('from=1000000'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('to=2000000'));
     });
 
     it('should throw error on failed response', async () => {
@@ -60,9 +48,9 @@ describe('MarketDataClient', () => {
         statusText: 'Internal Server Error',
       } as Response);
 
-      await expect(
-        client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)
-      ).rejects.toThrow('Market Data Service error: Internal Server Error');
+      await expect(client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)).rejects.toThrow(
+        'Market Data Service error: Internal Server Error'
+      );
     });
 
     it('should handle empty candle array', async () => {
@@ -110,15 +98,9 @@ describe('MarketDataClient', () => {
       const candle = await client.getLatestCandle('BTC/USDT', '1m');
 
       expect(candle).toEqual(mockCandle);
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/internal/latest-candle?')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('symbol=BTC%2FUSDT')
-      );
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('interval=1m')
-      );
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/internal/latest-candle?'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('symbol=BTC%2FUSDT'));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('interval=1m'));
     });
 
     it('should return null for 404 response', async () => {
@@ -139,9 +121,9 @@ describe('MarketDataClient', () => {
         statusText: 'Internal Server Error',
       } as Response);
 
-      await expect(
-        client.getLatestCandle('BTC/USDT', '1m')
-      ).rejects.toThrow('Market Data Service error: Internal Server Error');
+      await expect(client.getLatestCandle('BTC/USDT', '1m')).rejects.toThrow(
+        'Market Data Service error: Internal Server Error'
+      );
     });
   });
 
@@ -180,9 +162,9 @@ describe('MarketDataClient', () => {
     it('should handle network errors in getCandles', async () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
-      await expect(
-        client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)
-      ).rejects.toThrow('Network error');
+      await expect(client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)).rejects.toThrow(
+        'Network error'
+      );
     });
 
     it('should handle JSON parse errors in getCandles', async () => {
@@ -193,17 +175,15 @@ describe('MarketDataClient', () => {
         },
       } as Response);
 
-      await expect(
-        client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)
-      ).rejects.toThrow('Invalid JSON');
+      await expect(client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)).rejects.toThrow(
+        'Invalid JSON'
+      );
     });
 
     it('should handle network errors in getLatestCandle', async () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
-      await expect(
-        client.getLatestCandle('BTC/USDT', '1m')
-      ).rejects.toThrow('Network error');
+      await expect(client.getLatestCandle('BTC/USDT', '1m')).rejects.toThrow('Network error');
     });
   });
 });

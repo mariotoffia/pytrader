@@ -20,25 +20,24 @@ export const LogLevelSchema = z.enum(['debug', 'info', 'warn', 'error']);
 // Market Data Schemas
 // ============================================================================
 
-export const OHLCVCandleSchema = z.object({
-  symbol: z.string().min(1),
-  interval: IntervalSchema,
-  timestamp: z.number().int().positive(),
-  open: z.number().positive(),
-  high: z.number().positive(),
-  low: z.number().positive(),
-  close: z.number().positive(),
-  volume: z.number().nonnegative(),
-}).refine(
-  (data) => data.high >= data.low,
-  { message: 'High must be >= low' }
-).refine(
-  (data) => data.high >= data.open && data.high >= data.close,
-  { message: 'High must be >= open and close' }
-).refine(
-  (data) => data.low <= data.open && data.low <= data.close,
-  { message: 'Low must be <= open and close' }
-);
+export const OHLCVCandleSchema = z
+  .object({
+    symbol: z.string().min(1),
+    interval: IntervalSchema,
+    timestamp: z.number().int().positive(),
+    open: z.number().positive(),
+    high: z.number().positive(),
+    low: z.number().positive(),
+    close: z.number().positive(),
+    volume: z.number().nonnegative(),
+  })
+  .refine((data) => data.high >= data.low, { message: 'High must be >= low' })
+  .refine((data) => data.high >= data.open && data.high >= data.close, {
+    message: 'High must be >= open and close',
+  })
+  .refine((data) => data.low <= data.open && data.low <= data.close, {
+    message: 'Low must be <= open and close',
+  });
 
 export const SymbolSchema = z.object({
   symbol: z.string().min(1),
@@ -48,16 +47,18 @@ export const SymbolSchema = z.object({
   quoteAsset: z.string().min(1),
 });
 
-export const RawCandleSchema = z.object({
-  symbol: z.string().min(1),
-  interval: z.string().min(1),
-  timestamp: z.number().int(),
-  open: z.number(),
-  high: z.number(),
-  low: z.number(),
-  close: z.number(),
-  volume: z.number(),
-}).passthrough(); // Allow additional fields
+export const RawCandleSchema = z
+  .object({
+    symbol: z.string().min(1),
+    interval: z.string().min(1),
+    timestamp: z.number().int(),
+    open: z.number(),
+    high: z.number(),
+    low: z.number(),
+    close: z.number(),
+    volume: z.number(),
+  })
+  .passthrough(); // Allow additional fields
 
 // ============================================================================
 // Analytics Schemas
@@ -82,9 +83,11 @@ export const IndicatorNameSchema = z.enum([
   'volume_sma',
 ]);
 
-export const IndicatorResultSchema = z.object({
-  timestamp: z.number().int().positive(),
-}).catchall(z.number().or(z.undefined()));
+export const IndicatorResultSchema = z
+  .object({
+    timestamp: z.number().int().positive(),
+  })
+  .catchall(z.number().or(z.undefined()));
 
 // ============================================================================
 // WebSocket Message Schemas
@@ -175,16 +178,15 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
 // API Request/Response Schemas
 // ============================================================================
 
-export const GetCandlesRequestSchema = z.object({
-  provider: DataProviderSchema,
-  symbol: z.string().min(1),
-  interval: IntervalSchema,
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-}).refine(
-  (data) => data.to > data.from,
-  { message: 'to must be greater than from' }
-);
+export const GetCandlesRequestSchema = z
+  .object({
+    provider: DataProviderSchema,
+    symbol: z.string().min(1),
+    interval: IntervalSchema,
+    from: z.number().int().positive(),
+    to: z.number().int().positive(),
+  })
+  .refine((data) => data.to > data.from, { message: 'to must be greater than from' });
 
 export const GetCandlesResponseSchema = z.object({
   candles: z.array(OHLCVCandleSchema),
@@ -211,33 +213,31 @@ export const GetSymbolsResponseSchema = z.object({
   symbols: z.array(SymbolSchema),
 });
 
-export const CalculateIndicatorsRequestSchema = z.object({
-  provider: DataProviderSchema,
-  symbol: z.string().min(1),
-  interval: IntervalSchema,
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-  indicators: z.array(IndicatorNameSchema).min(1),
-}).refine(
-  (data) => data.to > data.from,
-  { message: 'to must be greater than from' }
-);
+export const CalculateIndicatorsRequestSchema = z
+  .object({
+    provider: DataProviderSchema,
+    symbol: z.string().min(1),
+    interval: IntervalSchema,
+    from: z.number().int().positive(),
+    to: z.number().int().positive(),
+    indicators: z.array(IndicatorNameSchema).min(1),
+  })
+  .refine((data) => data.to > data.from, { message: 'to must be greater than from' });
 
 export const CalculateIndicatorsResponseSchema = z.object({
   results: z.array(IndicatorResultSchema),
 });
 
-export const GenerateSignalsRequestSchema = z.object({
-  provider: DataProviderSchema,
-  symbol: z.string().min(1),
-  interval: IntervalSchema,
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-  strategyId: z.string().min(1),
-}).refine(
-  (data) => data.to > data.from,
-  { message: 'to must be greater than from' }
-);
+export const GenerateSignalsRequestSchema = z
+  .object({
+    provider: DataProviderSchema,
+    symbol: z.string().min(1),
+    interval: IntervalSchema,
+    from: z.number().int().positive(),
+    to: z.number().int().positive(),
+    strategyId: z.string().min(1),
+  })
+  .refine((data) => data.to > data.from, { message: 'to must be greater than from' });
 
 export const GenerateSignalsResponseSchema = z.object({
   signals: z.array(SignalSchema),
@@ -280,29 +280,32 @@ export const ProviderStatusSchema = z.object({
   errorState: z.string().nullable(),
 });
 
-export const BackfillRequestSchema = z.object({
-  provider: DataProviderSchema,
-  symbol: z.string().min(1),
-  interval: IntervalSchema,
-  from: z.number().int().positive().optional(),
-  to: z.number().int().positive().optional(),
-  hours: z.number().int().min(1).max(8760).optional(),
-}).refine(
-  (data) => {
-    const hasTimeRange = data.from !== undefined && data.to !== undefined;
-    const hasHours = data.hours !== undefined;
-    return hasTimeRange !== hasHours; // XOR: exactly one must be provided
-  },
-  { message: 'Must provide either (from AND to) OR hours, but not both' }
-).refine(
-  (data) => {
-    if (data.from !== undefined && data.to !== undefined) {
-      return data.to > data.from;
-    }
-    return true;
-  },
-  { message: 'to must be greater than from' }
-);
+export const BackfillRequestSchema = z
+  .object({
+    provider: DataProviderSchema,
+    symbol: z.string().min(1),
+    interval: IntervalSchema,
+    from: z.number().int().positive().optional(),
+    to: z.number().int().positive().optional(),
+    hours: z.number().int().min(1).max(8760).optional(),
+  })
+  .refine(
+    (data) => {
+      const hasTimeRange = data.from !== undefined && data.to !== undefined;
+      const hasHours = data.hours !== undefined;
+      return hasTimeRange !== hasHours; // XOR: exactly one must be provided
+    },
+    { message: 'Must provide either (from AND to) OR hours, but not both' }
+  )
+  .refine(
+    (data) => {
+      if (data.from !== undefined && data.to !== undefined) {
+        return data.to > data.from;
+      }
+      return true;
+    },
+    { message: 'to must be greater than from' }
+  );
 
 export const BackfillResponseSchema = z.object({
   success: z.boolean(),
