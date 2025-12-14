@@ -11,6 +11,7 @@ import { AnalyticsClient } from './clients/analyticsClient.js';
 import { SessionManager } from './websocket/sessionManager.js';
 import { WebSocketHandler } from './websocket/handler.js';
 import { SignalPoller } from './websocket/signalPoller.js';
+import { CandlePoller } from './websocket/candlePoller.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSymbolRoutes } from './routes/symbols.js';
 import { registerCandleRoutes } from './routes/candles.js';
@@ -30,6 +31,7 @@ class GatewayService {
   private sessionManager: SessionManager;
   private wsHandler: WebSocketHandler;
   private signalPoller: SignalPoller;
+  private candlePoller: CandlePoller;
 
   constructor() {
     this.config = loadConfig();
@@ -51,6 +53,12 @@ class GatewayService {
     this.sessionManager = new SessionManager();
     this.signalPoller = new SignalPoller(this.analyticsClient, this.fastify.log);
     this.wsHandler = new WebSocketHandler(this.sessionManager, this.fastify.log, this.signalPoller);
+    this.candlePoller = new CandlePoller(
+      this.marketDataClient,
+      this.sessionManager,
+      this.wsHandler,
+      this.fastify.log
+    );
 
     const traceRequests = process.env.TRACE_REQUESTS === '1';
 
@@ -171,6 +179,10 @@ class GatewayService {
       this.signalPoller.start();
       this.fastify.log.info('Signal polling started');
 
+      // Start candle polling for WebSocket subscribers
+      this.candlePoller.start();
+      this.fastify.log.info('Candle polling started');
+
       // Start HTTP server
       await this.fastify.listen({
         port: this.config.port,
@@ -195,6 +207,7 @@ class GatewayService {
 
     // Stop signal polling
     this.signalPoller.stop();
+    this.candlePoller.stop();
 
     // Close HTTP server (this also closes all WebSocket connections)
     await this.fastify.close();

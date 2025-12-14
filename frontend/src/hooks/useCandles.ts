@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { OHLCVCandle, Interval, CandleUpdateMessage, DataProvider } from '../types';
 import { useWebSocket } from './useWebSocket';
 import { debugLog } from '../utils/debug';
@@ -10,12 +10,23 @@ interface UseCandlesOptions {
   interval: Interval;
   gatewayUrl: string;
   wsUrl: string;
+  from?: number;
+  to?: number;
 }
 
-export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: UseCandlesOptions) {
+export function useCandles({
+  provider,
+  symbol,
+  interval,
+  gatewayUrl,
+  wsUrl,
+  from: fromOverride,
+  to: toOverride,
+}: UseCandlesOptions) {
   const [candles, setCandles] = useState<OHLCVCandle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestSeqRef = useRef(0);
 
   const handleWebSocketMessage = useCallback(
     (message: any) => {
@@ -53,19 +64,20 @@ export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: Us
 
   // Fetch historical candles
   const fetchHistoricalCandles = useCallback(async () => {
+    const requestSeq = ++requestSeqRef.current;
     try {
+      const to = toOverride ?? Date.now();
+      const from = fromOverride ?? to - 24 * 60 * 60 * 1000;
+
       setLoading(true);
       setError(null);
-
-      const now = Date.now();
-      const oneDayAgo = now - 24 * 60 * 60 * 1000;
 
       const params = new URLSearchParams({
         provider,
         symbol,
         interval,
-        from: oneDayAgo.toString(),
-        to: now.toString(),
+        from: from.toString(),
+        to: to.toString(),
       });
 
       const url = `${gatewayUrl}/candles?${params}`;
@@ -77,9 +89,11 @@ export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: Us
         { scope: 'candles', requestName: 'candles' }
       );
 
+      if (requestSeq !== requestSeqRef.current) return;
       debugLog('candles', 'fetched historical', { requestId, count: data.candles?.length ?? 0 });
-      setCandles(data.candles || []);
+      setCandles((data.candles || []).slice().sort((a, b) => a.timestamp - b.timestamp));
     } catch (err) {
+      if (requestSeq !== requestSeqRef.current) return;
       if (err instanceof HttpError) {
         debugLog('candles', 'fetch error', err.details);
         const message = `Failed to fetch candles: ${err.details.status ?? ''} ${err.details.statusText ?? ''} (requestId: ${err.details.requestId})`;
@@ -92,9 +106,10 @@ export function useCandles({ provider, symbol, interval, gatewayUrl, wsUrl }: Us
       setError(message);
       console.error('Error fetching candles:', err);
     } finally {
+      if (requestSeq !== requestSeqRef.current) return;
       setLoading(false);
     }
-  }, [provider, symbol, interval, gatewayUrl]);
+  }, [provider, symbol, interval, gatewayUrl, fromOverride, toOverride]);
 
   // Fetch historical data on mount and when symbol/interval changes
   useEffect(() => {

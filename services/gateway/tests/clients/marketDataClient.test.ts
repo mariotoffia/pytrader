@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MarketDataClient } from '../../src/clients/marketDataClient.js';
+import { UpstreamServiceError } from '../../src/clients/upstreamServiceError.js';
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -34,22 +35,25 @@ describe('MarketDataClient', () => {
       const candles = await client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000);
 
       expect(candles).toEqual(mockCandles);
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/internal/candles?'));
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('provider=mock'));
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('symbol=BTC%2FUSDT'));
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('interval=1m'));
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('from=1000000'));
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('to=2000000'));
+      const [url] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit | undefined];
+      expect(url).toContain('/internal/candles?');
+      expect(url).toContain('provider=mock');
+      expect(url).toContain('symbol=BTC%2FUSDT');
+      expect(url).toContain('interval=1m');
+      expect(url).toContain('from=1000000');
+      expect(url).toContain('to=2000000');
     });
 
     it('should throw error on failed response', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: false,
+        status: 500,
         statusText: 'Internal Server Error',
+        text: async () => 'Internal Server Error',
       } as Response);
 
       await expect(client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)).rejects.toThrow(
-        'Market Data Service error: Internal Server Error'
+        'Market Data Service error: 500 Internal Server Error'
       );
     });
 
@@ -72,7 +76,8 @@ describe('MarketDataClient', () => {
 
       await client.getCandles('binance', 'ETH/USDT', '5m', 5000000, 6000000);
 
-      expect(fetch).toHaveBeenCalledWith(
+      const [url] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit | undefined];
+      expect(url).toBe(
         `${baseUrl}/internal/candles?provider=binance&symbol=ETH%2FUSDT&interval=5m&from=5000000&to=6000000`
       );
     });
@@ -122,7 +127,7 @@ describe('MarketDataClient', () => {
       } as Response);
 
       await expect(client.getLatestCandle('BTC/USDT', '1m')).rejects.toThrow(
-        'Market Data Service error: Internal Server Error'
+        'Market Data Service error: 500 Internal Server Error'
       );
     });
   });
@@ -162,9 +167,14 @@ describe('MarketDataClient', () => {
     it('should handle network errors in getCandles', async () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
-      await expect(client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000)).rejects.toThrow(
-        'Network error'
-      );
+      try {
+        await client.getCandles('mock', 'BTC/USDT', '1m', 1000000, 2000000);
+        throw new Error('Expected getCandles to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(UpstreamServiceError);
+        expect((error as UpstreamServiceError).upstream.status).toBe(0);
+        expect((error as UpstreamServiceError).upstream.body).toContain('Network error');
+      }
     });
 
     it('should handle JSON parse errors in getCandles', async () => {
@@ -183,7 +193,14 @@ describe('MarketDataClient', () => {
     it('should handle network errors in getLatestCandle', async () => {
       vi.mocked(fetch).mockRejectedValue(new Error('Network error'));
 
-      await expect(client.getLatestCandle('BTC/USDT', '1m')).rejects.toThrow('Network error');
+      try {
+        await client.getLatestCandle('BTC/USDT', '1m');
+        throw new Error('Expected getLatestCandle to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(UpstreamServiceError);
+        expect((error as UpstreamServiceError).upstream.status).toBe(0);
+        expect((error as UpstreamServiceError).upstream.body).toContain('Network error');
+      }
     });
   });
 });

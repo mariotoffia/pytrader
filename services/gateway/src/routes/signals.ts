@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { AnalyticsClient, UpstreamServiceError } from '../clients/analyticsClient.js';
+import { AnalyticsClient } from '../clients/analyticsClient.js';
+import { UpstreamServiceError } from '../clients/upstreamServiceError.js';
 import {
   GenerateSignalsRequest,
   GenerateSignalsResponse,

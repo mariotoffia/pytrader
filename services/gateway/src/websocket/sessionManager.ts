@@ -11,6 +11,11 @@ type SubscriptionKey = string;
  */
 type SignalSubscriptionKey = string;
 
+export interface CandleSubscription {
+  symbol: string;
+  interval: Interval;
+}
+
 /**
  * Manages WebSocket client sessions and their subscriptions
  */
@@ -140,6 +145,19 @@ export class SessionManager {
    */
   getSubscriptionCount(): number {
     return this.subscribers.size;
+  }
+
+  /**
+   * Get all active candle subscriptions (unique symbol/interval pairs)
+   */
+  getCandleSubscriptions(): CandleSubscription[] {
+    const result: CandleSubscription[] = [];
+    for (const key of this.subscribers.keys()) {
+      const [symbol, interval] = key.split(':');
+      if (!symbol || !interval) continue;
+      result.push({ symbol, interval: interval as Interval });
+    }
+    return result;
   }
 
   /**

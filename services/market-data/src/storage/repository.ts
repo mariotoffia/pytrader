@@ -6,6 +6,7 @@ import { OHLCVCandle, Interval, CandlePageDirection } from '@pytrader/shared/typ
  * Implements idempotent writes and efficient queries
  */
 export class CandleRepository {
+  private upsertStmt: Database.Statement;
   private insertStmt: Database.Statement;
   private queryByRangeStmt: Database.Statement;
   private queryByProviderAndRangeStmt: Database.Statement;
@@ -18,6 +19,18 @@ export class CandleRepository {
 
   constructor(private db: Database.Database) {
     // Prepare statements for better performance
+    // For live updates, we upsert the current candle (same symbol/interval/timestamp/provider).
+    this.upsertStmt = db.prepare(`
+      INSERT INTO candles (symbol, interval, timestamp, open, high, low, close, volume, provider)
+      VALUES (@symbol, @interval, @timestamp, @open, @high, @low, @close, @volume, @provider)
+      ON CONFLICT(symbol, interval, timestamp, provider) DO UPDATE SET
+        open = excluded.open,
+        high = excluded.high,
+        low = excluded.low,
+        close = excluded.close,
+        volume = excluded.volume
+    `);
+
     this.insertStmt = db.prepare(`
       INSERT OR IGNORE INTO candles (symbol, interval, timestamp, open, high, low, close, volume, provider)
       VALUES (@symbol, @interval, @timestamp, @open, @high, @low, @close, @volume, @provider)
@@ -94,7 +107,7 @@ export class CandleRepository {
    * Insert a single candle (idempotent)
    */
   insertCandle(candle: OHLCVCandle): void {
-    this.insertStmt.run({
+    this.upsertStmt.run({
       symbol: candle.symbol,
       interval: candle.interval,
       timestamp: candle.timestamp,

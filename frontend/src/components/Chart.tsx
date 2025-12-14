@@ -1,8 +1,5 @@
 import { useEffect, useRef } from 'react';
 import {
-  createChart,
-  IChartApi,
-  ISeriesApi,
   CandlestickData,
   SeriesMarker,
   Time,
@@ -10,6 +7,7 @@ import {
 import { OHLCVCandle, Signal, DataProvider, Interval } from '../types';
 import { IndicatorData } from '../hooks/useIndicators';
 import { useChartBackfill } from '../hooks/useChartBackfill';
+import { useChartSetup } from './chart/useChartSetup';
 import config from '../config';
 
 interface ChartProps {
@@ -20,6 +18,7 @@ interface ChartProps {
   indicators?: IndicatorData;
   signals?: Signal[];
   onBackfillComplete?: () => void;
+  onVisibleRangeChange?: (range: { from: number; to: number }) => void;
 }
 
 const GATEWAY_URL = config.gatewayUrl;
@@ -32,18 +31,10 @@ export function Chart({
   indicators,
   signals,
   onBackfillComplete,
+  onVisibleRangeChange,
 }: ChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const rsiContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const rsiChartRef = useRef<IChartApi | null>(null);
-  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const ema20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const ema50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const bbUpperSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const bbMiddleSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const bbLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
-  const rsiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   // Backfill management
   const { handleVisibleRangeChange, backfilling, backfillMessage } = useChartBackfill({
@@ -51,194 +42,37 @@ export function Chart({
     provider,
     symbol,
     interval,
-    earliestCandleTimestamp: candles.length > 0 ? candles[0].timestamp : null,
+    candles,
     onBackfillComplete,
   });
 
+  const onVisibleRangeChangeRef = useRef<typeof onVisibleRangeChange>(onVisibleRangeChange);
+  const handleVisibleRangeChangeRef = useRef(handleVisibleRangeChange);
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    onVisibleRangeChangeRef.current = onVisibleRangeChange;
+  }, [onVisibleRangeChange]);
+  useEffect(() => {
+    handleVisibleRangeChangeRef.current = handleVisibleRangeChange;
+  }, [handleVisibleRangeChange]);
 
-    // Create chart
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight,
-      layout: {
-        background: { color: '#1e222d' },
-        textColor: '#d1d4dc',
-      },
-      grid: {
-        vertLines: { color: '#2b2b43' },
-        horzLines: { color: '#2b2b43' },
-      },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
-      },
-    });
-
-    // Create candlestick series
-    const candleSeries = chart.addCandlestickSeries({
-      upColor: '#26a69a',
-      downColor: '#ef5350',
-      borderVisible: false,
-      wickUpColor: '#26a69a',
-      wickDownColor: '#ef5350',
-    });
-
-    // Create EMA 20 line series
-    const ema20Series = chart.addLineSeries({
-      color: '#2962FF',
-      lineWidth: 2,
-      title: 'EMA 20',
-      priceLineVisible: false,
-      lastValueVisible: true,
-    });
-
-    // Create EMA 50 line series
-    const ema50Series = chart.addLineSeries({
-      color: '#FF6D00',
-      lineWidth: 2,
-      title: 'EMA 50',
-      priceLineVisible: false,
-      lastValueVisible: true,
-    });
-
-    // Create Bollinger Bands upper line series
-    const bbUpperSeries = chart.addLineSeries({
-      color: '#9C27B0',
-      lineWidth: 1,
-      title: 'BB Upper',
-      priceLineVisible: false,
-      lastValueVisible: false,
-      lineStyle: 2, // Dashed line
-    });
-
-    // Create Bollinger Bands middle line series
-    const bbMiddleSeries = chart.addLineSeries({
-      color: '#9C27B0',
-      lineWidth: 1,
-      title: 'BB Middle',
-      priceLineVisible: false,
-      lastValueVisible: false,
-    });
-
-    // Create Bollinger Bands lower line series
-    const bbLowerSeries = chart.addLineSeries({
-      color: '#9C27B0',
-      lineWidth: 1,
-      title: 'BB Lower',
-      priceLineVisible: false,
-      lastValueVisible: false,
-      lineStyle: 2, // Dashed line
-    });
-
-    chartRef.current = chart;
-    candleSeriesRef.current = candleSeries;
-    ema20SeriesRef.current = ema20Series;
-    ema50SeriesRef.current = ema50Series;
-    bbUpperSeriesRef.current = bbUpperSeries;
-    bbMiddleSeriesRef.current = bbMiddleSeries;
-    bbLowerSeriesRef.current = bbLowerSeries;
-
-    // Create RSI chart
-    if (rsiContainerRef.current) {
-      const rsiChart = createChart(rsiContainerRef.current, {
-        width: rsiContainerRef.current.clientWidth,
-        height: rsiContainerRef.current.clientHeight,
-        layout: {
-          background: { color: '#1e222d' },
-          textColor: '#d1d4dc',
-        },
-        grid: {
-          vertLines: { color: '#2b2b43' },
-          horzLines: { color: '#2b2b43' },
-        },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-        },
-      });
-
-      // Create RSI line series
-      const rsiSeries = rsiChart.addLineSeries({
-        color: '#FFD700',
-        lineWidth: 2,
-        title: 'RSI',
-        priceLineVisible: false,
-        lastValueVisible: true,
-      });
-
-      // Add horizontal lines for RSI levels (30 and 70)
-      rsiChart.applyOptions({
-        rightPriceScale: {
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.1,
-          },
-        },
-      });
-
-      rsiChartRef.current = rsiChart;
-      rsiSeriesRef.current = rsiSeries;
-
-      // Synchronize time scales and detect missing data for backfill
-      chart.timeScale().subscribeVisibleTimeRangeChange(async () => {
-        const timeRange = chart.timeScale().getVisibleRange();
-        if (timeRange && timeRange.from != null && timeRange.to != null && rsiChart) {
-          try {
-            rsiChart.timeScale().setVisibleRange(timeRange);
-          } catch (error) {
-            // Ignore errors when range is invalid
-          }
-
-          // Trigger backfill if user scrolled to missing data
-          const visibleFrom = (timeRange.from as number) * 1000; // Convert to ms
-          await handleVisibleRangeChange(visibleFrom);
-        }
-      });
-
-      rsiChart.timeScale().subscribeVisibleTimeRangeChange(() => {
-        const timeRange = rsiChart.timeScale().getVisibleRange();
-        if (timeRange && timeRange.from != null && timeRange.to != null && chart) {
-          try {
-            chart.timeScale().setVisibleRange(timeRange);
-          } catch (error) {
-            // Ignore errors when range is invalid
-          }
-        }
-      });
-    }
-
-    // Handle window resize
-    const handleResize = () => {
-      if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-          height: chartContainerRef.current.clientHeight,
-        });
-      }
-      if (rsiContainerRef.current && rsiChartRef.current) {
-        rsiChartRef.current.applyOptions({
-          width: rsiContainerRef.current.clientWidth,
-          height: rsiContainerRef.current.clientHeight,
-        });
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (chartRef.current) {
-        chartRef.current.remove();
-      }
-      if (rsiChartRef.current) {
-        rsiChartRef.current.remove();
-      }
-    };
-  }, []);
+  const {
+    chartRef,
+    candleSeriesRef,
+    ema20SeriesRef,
+    ema50SeriesRef,
+    bbUpperSeriesRef,
+    bbMiddleSeriesRef,
+    bbLowerSeriesRef,
+    rsiSeriesRef,
+  } = useChartSetup({
+    chartContainerRef,
+    rsiContainerRef,
+    onVisibleRangeChangeRef,
+    handleVisibleRangeChangeRef,
+  });
 
   // Update candles when data changes
+  const initialRangeNotifiedKeyRef = useRef<string>('');
   useEffect(() => {
     if (!candleSeriesRef.current || candles.length === 0) return;
 
@@ -251,7 +85,26 @@ export function Chart({
     }));
 
     candleSeriesRef.current.setData(chartData);
-  }, [candles]);
+
+    // On first data load for a symbol/interval, notify the parent about the initial visible range
+    // so it can ensure we have enough candles loaded for this view.
+    const key = `${provider}:${symbol}:${interval}`;
+    if (initialRangeNotifiedKeyRef.current !== key) {
+      initialRangeNotifiedKeyRef.current = key;
+      const chart = chartRef.current;
+      if (chart) {
+        const timeRange = chart.timeScale().getVisibleRange();
+        if (timeRange && timeRange.from != null && timeRange.to != null) {
+          const fromMs = typeof timeRange.from === 'number' ? timeRange.from * 1000 : null;
+          const toMs = typeof timeRange.to === 'number' ? timeRange.to * 1000 : null;
+          if (fromMs != null && toMs != null) {
+            onVisibleRangeChangeRef.current?.({ from: fromMs, to: toMs });
+            void handleVisibleRangeChangeRef.current(fromMs, toMs);
+          }
+        }
+      }
+    }
+  }, [candles, provider, symbol, interval]);
 
   // Update EMA 20 when indicators change
   useEffect(() => {

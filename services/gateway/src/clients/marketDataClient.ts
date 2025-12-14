@@ -14,12 +14,55 @@ import {
   BackfillRequest,
   BackfillResponse,
 } from '@pytrader/shared/types';
+import { UpstreamServiceError } from './upstreamServiceError.js';
 
 /**
  * HTTP client for Market Data Service
  */
 export class MarketDataClient {
   constructor(private baseUrl: string) {}
+
+  private async requestJson<T>(
+    path: string,
+    init?: RequestInit,
+    options?: { requestId?: string }
+  ): Promise<T> {
+    const url = `${this.baseUrl}${path}`;
+    let response: Response;
+
+    try {
+      response = await fetch(url, {
+        ...init,
+        headers: {
+          ...(init?.headers ?? {}),
+          ...(options?.requestId ? { 'X-Request-Id': options.requestId } : {}),
+        },
+      });
+    } catch (error) {
+      const body = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      throw new UpstreamServiceError(
+        'Market Data Service request failed',
+        { url, status: 0, statusText: 'FETCH_FAILED', body },
+        options?.requestId
+      );
+    }
+
+    if (!response.ok) {
+      let upstreamBody: string | undefined;
+      try {
+        upstreamBody = await response.text();
+      } catch {
+        // ignore
+      }
+      throw new UpstreamServiceError(
+        `Market Data Service error: ${response.status} ${response.statusText}`,
+        { url, status: response.status, statusText: response.statusText, body: upstreamBody },
+        options?.requestId
+      );
+    }
+
+    return (await response.json()) as T;
+  }
 
   /**
    * Get historical candles for a specific provider
@@ -39,14 +82,7 @@ export class MarketDataClient {
       to: to.toString(),
     });
 
-    const url = `${this.baseUrl}/internal/candles?${params}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    const data = (await response.json()) as GetCandlesResponse;
+    const data = await this.requestJson<GetCandlesResponse>(`/internal/candles?${params}`);
     return data.candles;
   }
 
@@ -56,14 +92,34 @@ export class MarketDataClient {
   async getLatestCandle(symbol: string, interval: Interval): Promise<OHLCVCandle | null> {
     const params = new URLSearchParams({ symbol, interval });
     const url = `${this.baseUrl}/internal/latest-candle?${params}`;
-    const response = await fetch(url);
-
-    if (response.status === 404) {
-      return null;
+    let response: Response;
+    try {
+      response = await fetch(url);
+    } catch (error) {
+      const body = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      throw new UpstreamServiceError('Market Data Service request failed', {
+        url,
+        status: 0,
+        statusText: 'FETCH_FAILED',
+        body,
+      });
     }
 
+    if (response.status === 404) return null;
+
     if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
+      let upstreamBody: string | undefined;
+      try {
+        upstreamBody = await response.text();
+      } catch {
+        // ignore
+      }
+      throw new UpstreamServiceError(`Market Data Service error: ${response.status} ${response.statusText}`, {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        body: upstreamBody,
+      });
     }
 
     const data = (await response.json()) as { candle: OHLCVCandle };
@@ -90,14 +146,7 @@ export class MarketDataClient {
     if (direction) params.append('direction', direction);
     if (limit) params.append('limit', limit.toString());
 
-    const url = `${this.baseUrl}/internal/candles/page?${params}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as PageCandlesResponse;
+    return await this.requestJson<PageCandlesResponse>(`/internal/candles/page?${params}`);
   }
 
   /**
@@ -116,28 +165,16 @@ export class MarketDataClient {
    * Get overall market data statistics
    */
   async getStatistics(): Promise<MarketDataStatistics> {
-    const url = `${this.baseUrl}/internal/candles/stats`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as MarketDataStatistics;
+    return await this.requestJson<MarketDataStatistics>('/internal/candles/stats');
   }
 
   /**
    * Get detailed statistics breakdown by provider/symbol/interval
    */
   async getDetailedStats(): Promise<{ stats: DetailedMarketDataStats[] }> {
-    const url = `${this.baseUrl}/internal/candles/stats/detailed`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as { stats: DetailedMarketDataStats[] };
+    return await this.requestJson<{ stats: DetailedMarketDataStats[] }>(
+      '/internal/candles/stats/detailed'
+    );
   }
 
   /**
@@ -149,28 +186,16 @@ export class MarketDataClient {
     if (filters.symbol) params.append('symbol', filters.symbol);
     if (filters.interval) params.append('interval', filters.interval);
 
-    const url = `${this.baseUrl}/internal/candles?${params}`;
-    const response = await fetch(url, { method: 'DELETE' });
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as DeleteCandlesResponse;
+    return await this.requestJson<DeleteCandlesResponse>(`/internal/candles?${params}`, {
+      method: 'DELETE',
+    });
   }
 
   /**
    * Get current multi-provider configuration
    */
   async getConfig(): Promise<MultiProviderConfig> {
-    const url = `${this.baseUrl}/internal/config`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as MultiProviderConfig;
+    return await this.requestJson<MultiProviderConfig>('/internal/config');
   }
 
   /**
@@ -179,46 +204,31 @@ export class MarketDataClient {
   async updateConfig(
     config: MultiProviderConfig
   ): Promise<{ success: boolean; config: MultiProviderConfig }> {
-    const url = `${this.baseUrl}/internal/config`;
-    const response = await fetch(url, {
+    return await this.requestJson<{ success: boolean; config: MultiProviderConfig }>(
+      '/internal/config',
+      {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as { success: boolean; config: MultiProviderConfig };
+      }
+    );
   }
 
   /**
    * Reload configuration from file
    */
   async reloadConfig(): Promise<{ success: boolean; config: MultiProviderConfig }> {
-    const url = `${this.baseUrl}/internal/config/reload`;
-    const response = await fetch(url, { method: 'POST' });
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as { success: boolean; config: MultiProviderConfig };
+    return await this.requestJson<{ success: boolean; config: MultiProviderConfig }>(
+      '/internal/config/reload',
+      { method: 'POST' }
+    );
   }
 
   /**
    * Get all provider statuses
    */
   async getProviders(): Promise<{ providers: ProviderStatus[] }> {
-    const url = `${this.baseUrl}/internal/providers`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as { providers: ProviderStatus[] };
+    return await this.requestJson<{ providers: ProviderStatus[] }>('/internal/providers');
   }
 
   /**
@@ -227,14 +237,9 @@ export class MarketDataClient {
   async getProviderTickers(
     provider: DataProvider
   ): Promise<{ provider: string; tickers: string[] }> {
-    const url = `${this.baseUrl}/internal/providers/${provider}/tickers`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as { provider: string; tickers: string[] };
+    return await this.requestJson<{ provider: string; tickers: string[] }>(
+      `/internal/providers/${provider}/tickers`
+    );
   }
 
   /**
@@ -243,45 +248,26 @@ export class MarketDataClient {
   async getProviderIntervals(
     provider: DataProvider
   ): Promise<{ provider: string; intervals: Interval[] }> {
-    const url = `${this.baseUrl}/internal/providers/${provider}/intervals`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as { provider: string; intervals: Interval[] };
+    return await this.requestJson<{ provider: string; intervals: Interval[] }>(
+      `/internal/providers/${provider}/intervals`
+    );
   }
 
   /**
    * Get specific provider status
    */
   async getProviderStatus(provider: DataProvider): Promise<ProviderStatus> {
-    const url = `${this.baseUrl}/internal/providers/${provider}/status`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as ProviderStatus;
+    return await this.requestJson<ProviderStatus>(`/internal/providers/${provider}/status`);
   }
 
   /**
    * Trigger manual backfill for specific provider/symbol/interval
    */
   async backfill(request: BackfillRequest): Promise<BackfillResponse> {
-    const url = `${this.baseUrl}/internal/backfill`;
-    const response = await fetch(url, {
+    return await this.requestJson<BackfillResponse>('/internal/backfill', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     });
-
-    if (!response.ok) {
-      throw new Error(`Market Data Service error: ${response.statusText}`);
-    }
-
-    return (await response.json()) as BackfillResponse;
   }
 }

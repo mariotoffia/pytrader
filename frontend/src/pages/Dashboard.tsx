@@ -10,6 +10,7 @@ import { useProviderStatus } from '../hooks/useProviderStatus';
 import { useConfig } from '../hooks/useConfig';
 import { useBackfill } from '../hooks/useBackfill';
 import { Interval, DataProvider } from '../types';
+import { intervalToMs } from '../utils/interval';
 import {
   getStoredProvider,
   setStoredProvider,
@@ -37,6 +38,29 @@ export function Dashboard() {
 
   // Fetch config to get configured symbols and intervals
   const { config: appConfig } = useConfig();
+  const defaultBackfillHours = appConfig?.defaultBackfillHours ?? 24;
+
+  const [candleFrom, setCandleFrom] = useState<number>(() => Date.now() - 24 * 60 * 60 * 1000);
+
+  // Reset range when switching data source
+  useEffect(() => {
+    const now = Date.now();
+    setCandleFrom(now - defaultBackfillHours * 60 * 60 * 1000);
+  }, [provider, symbol, interval, defaultBackfillHours]);
+
+  const handleChartVisibleRangeChange = useCallback(
+    ({ from, to }: { from: number; to: number }) => {
+      const intervalMs = intervalToMs(interval);
+      const leftBufferMs = intervalMs * 200;
+
+      const desiredFrom = Math.max(0, from - leftBufferMs);
+      // Only extend the left edge (history). The right edge is driven by WebSocket live updates.
+      // This prevents a tight loop where a moving "now" keeps changing `to`, causing refetch storms.
+      void to; // intentionally unused
+      setCandleFrom((prev) => (desiredFrom < prev ? desiredFrom : prev));
+    },
+    [interval]
+  );
 
   // Get symbols from config for current provider
   const providerSymbols = appConfig?.providers?.[provider]?.symbols || [];
@@ -85,6 +109,7 @@ export function Dashboard() {
     interval,
     gatewayUrl: GATEWAY_URL,
     wsUrl: WS_URL,
+    from: candleFrom,
   });
 
   // Fetch technical indicators (EMA 20, EMA 50, RSI 14)
@@ -305,7 +330,7 @@ export function Dashboard() {
           </div>
         )}
 
-        {!loading && !error && candles.length > 0 && (
+        {!error && candles.length > 0 && (
           <Chart
             candles={candles}
             symbol={symbol}
@@ -314,6 +339,7 @@ export function Dashboard() {
             indicators={indicators}
             signals={signals}
             onBackfillComplete={refetchCandles}
+            onVisibleRangeChange={handleChartVisibleRangeChange}
           />
         )}
 
